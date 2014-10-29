@@ -13,7 +13,7 @@ namespace WebProject.Model
 {
     public class GenericRepository
     {
-        protected NMEntities model = new NMEntities ();
+        protected NOMBRE_PROYECTO-Entities model = new NOMBRE_PROYECTO-Entities ();
         const string keyPropertyName = "Id";
         protected interface IRepository
         {
