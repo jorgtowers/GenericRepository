@@ -112,11 +112,25 @@ namespace GenericRepository
 
         protected override void OnInit(EventArgs e)
         {
-            Type TDynamic = typeof(T);
+            Type TDynamic=null;
+
             base.CheckParametrosUrlQueryString();
+
+
+            if (string.IsNullOrEmpty(base.Clase))
+                TDynamic = typeof(T);
+            else
+                TDynamic = Type.GetType("Reuniones.Model." + base.Clase);
+
+            
+
             base.OnInit(e);
 
             PropertyInfo[] propiedades = TDynamic.GetProperties();
+
+            #region Mantenimiento
+
+            
             _Panel.Controls.Add(new LiteralControl("<table class='table'><tbody>"));
             foreach (PropertyInfo propiedad in propiedades)
             {
@@ -151,6 +165,10 @@ namespace GenericRepository
                         {
                             t.Enabled = false;
                             t.Attributes.Add("optional", "si");
+                        }
+                        if (nombre == "Password")
+                        {
+                            t.TextMode = TextBoxMode.Password;
                         }
                         _Panel.Controls.Add(t);
                         _Panel.Controls.Add(new LiteralControl("</td></tr>"));
@@ -204,6 +222,25 @@ namespace GenericRepository
             _Panel.Controls.Add(new LiteralControl("</td></tr>"));
 
             _Panel.Controls.Add(new LiteralControl("</tbody></table>"));
+
+            #endregion
+
+            #region Listado
+            _Panel.Controls.Add(new LiteralControl("<table class='table table-condensed'><thead><tr>"));            
+            foreach (KeyValuePair<string,string> headers in _Fields)
+            {
+            _Panel.Controls.Add(new LiteralControl("<td>" + headers.Key + "</td>"));    
+            }
+            _Panel.Controls.Add(new LiteralControl("</tr></thead>"));
+            _Panel.Controls.Add(new LiteralControl("<tbody><tr>"));
+            foreach (KeyValuePair<string,string> headers in _Fields)
+            {
+            _Panel.Controls.Add(new LiteralControl("<td>" + headers.Key + "</td>"));    
+            }
+            _Panel.Controls.Add(new LiteralControl("</tr></tbody></table>"));            
+
+            #endregion
+
         }
 
         private T ObjectToUpdate()
@@ -224,7 +261,7 @@ namespace GenericRepository
                         TextBox txt=((TextBox)control);
                         if (txt.Enabled)
                         {
-                            Type tipoDeItem = _.GetType().BaseType;
+                            //Type tipoDeItem = _.GetType().BaseType;
                             Type tipoDePropiedad = Type.GetType("System." + campo.Value);
                             PropertyInfo propiedad = _.GetType().GetProperty(campo.Key);
                             var valor = txt.Text;
@@ -247,8 +284,12 @@ namespace GenericRepository
         protected override void OnLoad(EventArgs e)
         {
               base.OnLoad(e);
-              if (base.Id > 0) {
-                  FillCampos(model.Obtener<T>(base.Id));                  
+              if (!Page.IsPostBack)
+              {
+                  if (base.Id > 0)
+                  {
+                      FillCampos(model.Obtener<T>(base.Id));
+                  }
               }
         }
 
@@ -263,7 +304,7 @@ namespace GenericRepository
                         if (control.ID == "txt" + campo.Key)
                         {
                             TextBox txt=((TextBox)control);
-                            Type tipoDeItem = item.GetType().BaseType;
+                            //Type tipoDeItem = item.GetType().BaseType;
                             Type tipoDePropiedad = Type.GetType("System." + campo.Value);
                             PropertyInfo propiedad = item.GetType().GetProperty(campo.Key);
                             object resultado = propiedad.GetValue(item, null);
@@ -283,19 +324,19 @@ namespace GenericRepository
         {
             try
             {
-                model.Agregar<T>(this.ObjectToUpdate());
-                Limpiar(sender, e);
+                model.Agregar<T>(this.ObjectToUpdate());              
                 _Resultado = "Registro agregado satisfactoriamente...";
             }
             catch (Exception ex) { _Resultado = ex.Message; }
             finally {
                 foreach (Control control in _Panel.Controls)
-                {
+                {                    
                     if (control.ID == "lblEstatus")
                     {
                         ((Label)control).Text = _Resultado;                        
                     }
                 }
+                Limpiar(sender, e);
             }
         }
         protected virtual void Modificar(object sender, EventArgs e)
@@ -391,8 +432,10 @@ namespace GenericRepository
         }
     }
 
+    
     namespace EF4
     {
+        [Obsolete("Usar GenericRepository.EF5", true)]
         public class GenericRepository<TContext> where TContext : ObjectContext, new()
         {
             protected static ObjectContext model;
@@ -609,6 +652,7 @@ namespace GenericRepository
     }
     namespace EF4SupportEF5
     {
+        [Obsolete("Usar GenericRepository.EF5", true)]
         public class GenericRepository
         {
             //INSTANCIA DE OBJETO DEL EDM
