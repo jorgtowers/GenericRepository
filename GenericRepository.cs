@@ -153,7 +153,7 @@ namespace GenericRepository
 
             #region Mantenimiento
 
-
+            _Panel.Controls.Add(new LiteralControl("<p onclick=app.Utils.Toogle('editPanel')><b class='fa fa-edit'></b>Presione clic o la tecla F9, para abrir panel de edición.</p><div id='editPanel' style='display: none'><span id='closeEditPanel' onclick=app.Utils.Toogle('editPanel')><b class='fa fa-times'></b></span>"));
             _Panel.Controls.Add(new LiteralControl("<table class='table'><tbody>"));
             foreach (PropertyInfo propiedad in propiedades)
             {
@@ -213,12 +213,14 @@ namespace GenericRepository
 
             Button btnAgregar = new Button() { ID = "btnAgregar", CssClass = "btn btn-primary", Text = "Agregar" };
             btnAgregar.Click += Agregar;
+            btnAgregar.OnClientClick = "return app.Utils.ValidarCampos('editPanel',true)";
             if (base.Id > 0)
                 btnAgregar.Enabled = false;
             _Panel.Controls.Add(btnAgregar);
 
             Button btnModificar = new Button() { ID = "btnModificar", CssClass = "btn btn-default", Text = "Modificar" };
             btnModificar.Click += Modificar;
+            btnModificar.OnClientClick = "return app.Utils.ValidarCampos('editPanel',true)";
             if (base.Id < 0)
                 btnModificar.Enabled = false;
             _Panel.Controls.Add(btnModificar);
@@ -235,7 +237,7 @@ namespace GenericRepository
 
             _Panel.Controls.Add(new LiteralControl("</td></tr>"));
 
-            _Panel.Controls.Add(new LiteralControl("</tbody></table>"));
+            _Panel.Controls.Add(new LiteralControl("</tbody></table></div>"));
 
             #endregion
 
