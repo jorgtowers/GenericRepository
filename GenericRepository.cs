@@ -173,13 +173,15 @@ namespace GenericRepository
                     if (tipo == "String" || tipo == "Int32" || tipo == "DateTime")
                     {
                         _Fields.Add(new KeyValuePair<string, string>(nombre, tipo));
-                        _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'>" + nombre + "</td><td>"));
                         TextBox t = new TextBox() { ID = "txt" + nombre.Replace(" ", ""), CssClass = "form-control" };
                         if (nombre == "Id")
                         {
+                            _Panel.Controls.Add(new LiteralControl("<tr class='help' style='display:none'><td  class='info'>" + nombre + "</td><td>"));
                             t.Enabled = false;
                             t.Attributes.Add("optional", "si");
                         }
+                        else
+                            _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'>" + nombre + "</td><td>"));
                         if (nombre == "Password")
                         {
                             t.TextMode = TextBoxMode.Password;
