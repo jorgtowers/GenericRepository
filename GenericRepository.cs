@@ -9,7 +9,6 @@ using System.Data.Entity.Infrastructure;
 using System.Data.Entity;
 using System.Data.Objects;
 using System.Data.Objects.DataClasses;
-
 using System.Data;
 using Reuniones.Model;
 using System.Web.UI.WebControls;
@@ -91,38 +90,62 @@ namespace GenericRepository
         }
 
     }
-
+    /// <summary>
+    /// Clase especializada para la generación de páginas web apartir del nombre de una instancia, usando reflextion
+    /// </summary>
+    /// <typeparam name="T">Instancia de Type a usar</typeparam>
     public class PageDynamic<T> : AbstractPage where T : class,IId,new()
     {
         private Panel _Panel = new Panel();
-
+        /// <summary>
+        /// Instancia del Panel que será usado para crear todos los elementos de la instancia del objeto recibido
+        /// </summary>
         public Panel Panel
         {
             get { return _Panel; }
             set { _Panel = value; }
-        }
-
-        
-       List< KeyValuePair<string, string>> _Fields = new List<KeyValuePair<string, string>>();
+        }        
+        List< KeyValuePair<string, string>> _Fields = new List<KeyValuePair<string, string>>();
+        /// <summary>
+        /// Listado de campos y tipo de valor para a creación de los elementos y validar sus tipos de datos
+        /// </summary>
         public List<KeyValuePair<string, string>> Fields
         {
             get { return _Fields; }
             set { _Fields = value; }
         }
-
+        List<T> _Listado = new List<T>();
+        /// <summary>
+        /// Expone listado de T para usarlo en el metodo de actualizar listado
+        /// </summary>
+        public List<T> Listado
+        {
+            get { return _Listado; }
+            set { _Listado = value; }
+        }
+        /// <summary>
+        /// Instancia de Label para mostrar notificación de las operaciones básicas
+        /// </summary>
+        public Label lblEstatus {
+            
+            get {
+                return _Panel.Controls.OfType<Label>().Where(x => x.ID == "lblEstatus").FirstOrDefault();
+            }
+        }
+        /// <summary>
+        /// Prepara la página para crear por Reflextion todos los campos y botones propios de la instancia del objeto recibido
+        /// </summary>
+        /// <param name="e"></param>
         protected override void OnInit(EventArgs e)
         {
-            Type TDynamic=null;
+            Type TDynamic = null;
 
             base.CheckParametrosUrlQueryString();
-
-
+            
             if (string.IsNullOrEmpty(base.Clase))
                 TDynamic = typeof(T);
             else
-                TDynamic = Type.GetType("Reuniones.Model." + base.Clase);
-
-            
+                TDynamic = Type.GetType(typeof(T).Namespace +"."+ base.Clase);
 
             base.OnInit(e);
 
@@ -130,32 +153,23 @@ namespace GenericRepository
 
             #region Mantenimiento
 
-            
+
             _Panel.Controls.Add(new LiteralControl("<table class='table'><tbody>"));
             foreach (PropertyInfo propiedad in propiedades)
             {
-               // StringBuilder sb = new StringBuilder();
-
-                //Tipo Nulleable
                 string tipo = "";
                 string nombre = "";
                 if (propiedad.PropertyType.GetGenericArguments().Count() > 0)
                 {
-                    //sb.AppendLine("<b>Tipo:</b>" + propiedad.PropertyType.GetGenericArguments()[0].Name);
                     tipo = propiedad.PropertyType.GetGenericArguments()[0].Name;
                 }
                 else
                 {
-                    //sb.AppendLine("<b>Tipo:</b>" + propiedad.PropertyType.Name);
                     tipo = propiedad.PropertyType.Name;
                 }
-                //sb.AppendLine("<b>Namespace:</b>" + propiedad.PropertyType.Namespace);
                 if (propiedad.PropertyType.Namespace == "System")
                 {
-                   // sb.AppendLine("<b>Campo Nombre:</b>" + propiedad.Name);
                     nombre = propiedad.Name;
-                    
-
                     if (tipo == "String" || tipo == "Int32" || tipo == "DateTime")
                     {
                         _Fields.Add(new KeyValuePair<string, string>(nombre, tipo));
@@ -191,34 +205,34 @@ namespace GenericRepository
                 //Response.Write(sb.ToString());
             }
             _Panel.Controls.Add(new LiteralControl("<tr><td colspan='2'>"));
-            Label lblEstatus = new Label() { ID = "lblEstatus"};
+            Label lblEstatus = new Label() { ID = "lblEstatus" };
             _Panel.Controls.Add(lblEstatus);
             _Panel.Controls.Add(new LiteralControl("</td></tr>"));
 
             _Panel.Controls.Add(new LiteralControl("<tr><td colspan='2'>"));
-            
-            Button btnAgregar = new Button() { ID = "btnAgregar", CssClass = "btn btn-primary", Text="Agregar" };
+
+            Button btnAgregar = new Button() { ID = "btnAgregar", CssClass = "btn btn-primary", Text = "Agregar" };
             btnAgregar.Click += Agregar;
             if (base.Id > 0)
                 btnAgregar.Enabled = false;
             _Panel.Controls.Add(btnAgregar);
-            
-            Button btnModificar = new Button() { ID = "btnModificar", CssClass = "btn btn-default", Text="Modificar" };
+
+            Button btnModificar = new Button() { ID = "btnModificar", CssClass = "btn btn-default", Text = "Modificar" };
             btnModificar.Click += Modificar;
-            if (base.Id <0)
+            if (base.Id < 0)
                 btnModificar.Enabled = false;
             _Panel.Controls.Add(btnModificar);
 
-            Button btnEliminar = new Button() { ID = "btnEliminar", CssClass = "btn btn-default" , Text="Eliminar"};
+            Button btnEliminar = new Button() { ID = "btnEliminar", CssClass = "btn btn-default", Text = "Eliminar" };
             btnEliminar.Click += Eliminar;
             if (base.Id < 0)
                 btnEliminar.Enabled = false;
             _Panel.Controls.Add(btnEliminar);
 
-            Button btnLimpiar = new Button() { ID = "btnLimpiar", CssClass = "btn btn-default", Text="Limpiar" };
+            Button btnLimpiar = new Button() { ID = "btnLimpiar", CssClass = "btn btn-default", Text = "Limpiar" };
             btnLimpiar.Click += Limpiar;
             _Panel.Controls.Add(btnLimpiar);
-            
+
             _Panel.Controls.Add(new LiteralControl("</td></tr>"));
 
             _Panel.Controls.Add(new LiteralControl("</tbody></table>"));
@@ -226,23 +240,39 @@ namespace GenericRepository
             #endregion
 
             #region Listado
-            _Panel.Controls.Add(new LiteralControl("<table class='table table-condensed'><thead><tr>"));            
-            foreach (KeyValuePair<string,string> headers in _Fields)
+            _Panel.Controls.Add(new LiteralControl("<table class='table table-condensed'><thead><tr>"));
+            foreach (KeyValuePair<string, string> headers in _Fields)
             {
-            _Panel.Controls.Add(new LiteralControl("<td>" + headers.Key + "</td>"));    
+                _Panel.Controls.Add(new LiteralControl("<td>" + headers.Key + "</td>"));
             }
             _Panel.Controls.Add(new LiteralControl("</tr></thead>"));
-            _Panel.Controls.Add(new LiteralControl("<tbody><tr>"));
-            foreach (KeyValuePair<string,string> headers in _Fields)
-            {
-            _Panel.Controls.Add(new LiteralControl("<td>" + headers.Key + "</td>"));    
+            _Panel.Controls.Add(new LiteralControl("<tbody>"));
+
+            _Listado = model.Listado<T>().ToList();
+            foreach (T item in _Listado)
+            {_Panel.Controls.Add(new LiteralControl("<tr>"));
+                foreach (KeyValuePair<string, string> campo in _Fields)
+                {
+                    
+                    Type tipoDePropiedad = Type.GetType("System." + campo.Value);
+                    PropertyInfo propiedad = item.GetType().GetProperty(campo.Key);
+                    object resultado = propiedad.GetValue(item, null);
+                    if(campo.Key=="Id")
+                        _Panel.Controls.Add(new LiteralControl("<td><a href='?Id="+resultado.ToString() +"'><b class='fa fa-edit'></b></a></td>"));
+                    else
+                    _Panel.Controls.Add(new LiteralControl("<td>" + resultado.ToString() + "</td>"));
+                   
+                } _Panel.Controls.Add(new LiteralControl("</tr>"));
             }
-            _Panel.Controls.Add(new LiteralControl("</tr></tbody></table>"));            
+            _Panel.Controls.Add(new LiteralControl("</tbody></table>"));
 
             #endregion
 
         }
-
+        /// <summary>
+        /// Obtiene una instancia para agregar, edición y/o eliminación de un elemento
+        /// </summary>
+        /// <returns>Instancia de T</returns>
         private T ObjectToUpdate()
         {
             T _;
@@ -250,31 +280,22 @@ namespace GenericRepository
                 _ = model.Obtener<T>(base.Id);
             else
                 _ = new T();
-
-            foreach (KeyValuePair<string, string> campo in Fields)
+            List<TextBox> txts = _Panel.Controls.OfType<TextBox>().ToList();
+            foreach (TextBox txt in txts)
             {
-
-                foreach (Control control in _Panel.Controls)
+                if (txt.Enabled)
                 {
-                    if (control.ID == "txt" + campo.Key)
-                    {
-                        TextBox txt=((TextBox)control);
-                        if (txt.Enabled)
-                        {
-                            //Type tipoDeItem = _.GetType().BaseType;
-                            Type tipoDePropiedad = Type.GetType("System." + campo.Value);
-                            PropertyInfo propiedad = _.GetType().GetProperty(campo.Key);
-                            var valor = txt.Text;
-                            propiedad.SetValue(_, Convert.ChangeType(valor, tipoDePropiedad), null);
-                        }
-                    }
+                    KeyValuePair<string, string> par = Fields.Where(x => x.Key == txt.ID.Replace("txt", "")).FirstOrDefault();
+                    Type.GetType("System." + par.Value);
+                    _.GetType().GetProperty(par.Key).SetValue(_, Convert.ChangeType(txt.Text, Type.GetType("System." + par.Value)), null);
                 }
             }
-
             return _;
         }
-
         private string _Resultado = "";
+        /// <summary>
+        /// Notifica de los eventos que se realizan en caso Agregar, Modificar, Eliminar y en caso de error se notifica vía Exception.Message 
+        /// </summary>
         public string Resultado
         {
             get { return _Resultado; }
@@ -290,34 +311,35 @@ namespace GenericRepository
                   {
                       FillCampos(model.Obtener<T>(base.Id));
                   }
+                  RefreshListado();
               }
         }
-
-        private void FillCampos(T item) {
+        private void RefreshListado()
+        {
+            _Listado = model.Listado<T>().ToList();
+        }
+        private void FillCampos(T item)
+        {
             try
             {
                 foreach (KeyValuePair<string, string> campo in Fields)
                 {
-
                     foreach (Control control in _Panel.Controls)
                     {
                         if (control.ID == "txt" + campo.Key)
                         {
-                            TextBox txt=((TextBox)control);
-                            //Type tipoDeItem = item.GetType().BaseType;
-                            Type tipoDePropiedad = Type.GetType("System." + campo.Value);
-                            PropertyInfo propiedad = item.GetType().GetProperty(campo.Key);
-                            object resultado = propiedad.GetValue(item, null);
-                            txt.Text = resultado.ToString();
+                            ((TextBox)control).Text = item.GetType().GetProperty(campo.Key).GetValue(item, null).ToString();
                         }
-
                     }
                 }
             }
-            catch (Exception ex){
+            catch (Exception ex)
+            {
                 _Resultado = ex.Message;
             }
-            
+            finally{
+                lblEstatus.Text = _Resultado;
+            }
         }
 
         protected virtual void Agregar(object sender, EventArgs e)
@@ -329,13 +351,7 @@ namespace GenericRepository
             }
             catch (Exception ex) { _Resultado = ex.Message; }
             finally {
-                foreach (Control control in _Panel.Controls)
-                {                    
-                    if (control.ID == "lblEstatus")
-                    {
-                        ((Label)control).Text = _Resultado;                        
-                    }
-                }
+                lblEstatus.Text = _Resultado;
                 Limpiar(sender, e);
             }
         }
@@ -343,20 +359,13 @@ namespace GenericRepository
         {
             try
             {
-                model.Modificar<T>(this.ObjectToUpdate());
-                
+                model.Modificar<T>(this.ObjectToUpdate());                
                 _Resultado = "Registro modificado satisfactoriamente...";
             }
             catch (Exception ex) { _Resultado = ex.Message; }
             finally
             {
-                foreach (Control control in _Panel.Controls)
-                {
-                    if (control.ID == "lblEstatus")
-                    {
-                        ((Label)control).Text = _Resultado;
-                    }
-                }
+                lblEstatus.Text = _Resultado;
                 Limpiar(sender, e);
             }
         }
@@ -371,42 +380,35 @@ namespace GenericRepository
             catch (Exception ex) { _Resultado = ex.Message; }
             finally
             {
-                foreach (Control control in _Panel.Controls)
-                {
-                    if (control.ID == "lblEstatus")
-                    {
-                        ((Label)control).Text = _Resultado;
-                    }
-                }
+                lblEstatus.Text = _Resultado;
                 Limpiar(sender, e);
             }
         }
-
         protected virtual void Limpiar(object sender, EventArgs e)
         {
-            foreach (Control item in _Panel.Controls)
+            foreach (TextBox item in _Panel.Controls.OfType<TextBox>())
             {
-                if (item.GetType() == typeof(TextBox))
+                item.Text = "";
+            }
+            foreach (RadioButtonList radios in _Panel.Controls.OfType<RadioButtonList>())
+            {
+                foreach (ListItem radio in radios.Items)
                 {
-                    ((TextBox)item).Text = "";
-
+                    radio.Selected = false;
                 }
-                if (item.GetType() == typeof(RadioButtonList))
+            }
+            foreach (CheckBoxList checks in _Panel.Controls.OfType<CheckBoxList>())
+            {
+                foreach (ListItem check in checks.Items)
                 {
-                    foreach (ListItem radio in ((RadioButtonList)item).Items)
-                    {
-                        radio.Selected = false;
-                    }
+                    check.Selected = false;
                 }
-                if (item.GetType() == typeof(CheckBoxList))
-                {
-                    foreach (ListItem radio in ((CheckBoxList)item).Items)
-                    {
-                        radio.Selected = false;
-                    }
-                }
-            
-            }            
+            }
+            RefreshListado();
+            if (((Button)sender).Text == "Limpiar")
+            {
+                Response.Redirect(Request.Url.LocalPath, false);
+            }
         }
 
     }
