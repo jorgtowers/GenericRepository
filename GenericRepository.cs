@@ -196,6 +196,7 @@ namespace GenericRepository
                     }
                     if (tipo == "Boolean")
                     {
+                        _Fields.Add(new KeyValuePair<string, string>(nombre, tipo));
                         _Panel.Controls.Add(new LiteralControl("<tr><td>" + nombre + "</td><td>"));
                         CheckBox t = new CheckBox() { ID = "chk" + nombre.Replace(" ", "") };
                         _Panel.Controls.Add(t);
@@ -268,7 +269,7 @@ namespace GenericRepository
                     PropertyInfo propiedad = item.GetType().GetProperty(campo.Key);
                     object resultado = propiedad.GetValue(item, null);
                     if (campo.Key == "Id")
-                        _Panel.Controls.Add(new LiteralControl("<td><a href='?Id=" + resultado.ToString() + "'><b class='fa fa-edit'></b></a></td>"));
+                        _Panel.Controls.Add(new LiteralControl("<td><a href='?Id=" + (resultado != null ? resultado.ToString() : "") + "'><b class='fa fa-edit'></b></a></td>"));
                     else
                         _Panel.Controls.Add(new LiteralControl("<td>" + (resultado != null ? resultado.ToString() : "") + "</td>"));
 
@@ -299,6 +300,15 @@ namespace GenericRepository
                     Type.GetType("System." + par.Value);
                     _.GetType().GetProperty(par.Key).SetValue(_, Convert.ChangeType(txt.Text, Type.GetType("System." + par.Value)), null);
                 }
+            }
+            List<CheckBox> chks = _Panel.Controls.OfType<CheckBox>().ToList();
+            foreach (CheckBox chk in chks)
+            {
+              
+                    KeyValuePair<string, string> par = Fields.Where(x => x.Key == chk.ID.Replace("chk", "")).FirstOrDefault();
+                    Type.GetType("System." + par.Value);
+                    _.GetType().GetProperty(par.Key).SetValue(_, Convert.ChangeType(chk.Checked, Type.GetType("System." + par.Value)), null);
+                
             }
             return _;
         }
@@ -338,7 +348,12 @@ namespace GenericRepository
                     {
                         if (control.ID == "txt" + campo.Key)
                         {
-                            ((TextBox)control).Text = item.GetType().GetProperty(campo.Key).GetValue(item, null).ToString();
+                            object result=item.GetType().GetProperty(campo.Key).GetValue(item, null);
+                            ((TextBox)control).Text = (result!=null?result:"").ToString();
+                        }
+                        if (control.ID == "chk" + campo.Key)
+                        {
+                            ((CheckBox)control).Checked = Convert.ToBoolean(item.GetType().GetProperty(campo.Key).GetValue(item, null));
                         }
                     }
                 }
