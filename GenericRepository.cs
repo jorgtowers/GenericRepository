@@ -7,15 +7,15 @@ using System.Linq.Expressions;
 using System.Collections;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity;
-using System.Data.Objects;
-using System.Data.Objects.DataClasses;
 using System.Data;
 using System.Web.UI.WebControls;
 using System.Web.UI;
 using GenericRepository.EF5;
 using System.Text;
-using WebProject.Model;
-using Metas.Model;
+using PageDynamc.Model;
+using System.Data.Entity.Core.Objects;
+using System.Data.Entity.Core.Objects.DataClasses;
+
 
 
 namespace GenericRepository
@@ -270,7 +270,7 @@ namespace GenericRepository
                     if (campo.Key == "Id")
                         _Panel.Controls.Add(new LiteralControl("<td><a href='?Id=" + resultado.ToString() + "'><b class='fa fa-edit'></b></a></td>"));
                     else
-                        _Panel.Controls.Add(new LiteralControl("<td>" + resultado.ToString() + "</td>"));
+                        _Panel.Controls.Add(new LiteralControl("<td>" + (resultado != null ? resultado.ToString() : "") + "</td>"));
 
                 } _Panel.Controls.Add(new LiteralControl("</tr>"));
             }
@@ -445,7 +445,6 @@ namespace GenericRepository
             ctrl.DataBind();
         }
     }
-
 
     namespace EF4
     {
@@ -670,7 +669,7 @@ namespace GenericRepository
         public class GenericRepository
         {
             //INSTANCIA DE OBJETO DEL EDM
-            protected static Entities context = new Entities();
+            protected static DesarrollosEntities context = new DesarrollosEntities();
 
             protected ObjectContext model = ((IObjectContextAdapter)context).ObjectContext;
 
