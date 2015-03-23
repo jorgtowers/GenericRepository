@@ -10,11 +10,12 @@ using System.Data.Entity;
 using System.Data.Objects;
 using System.Data.Objects.DataClasses;
 using System.Data;
-using Reuniones.Model;
 using System.Web.UI.WebControls;
 using System.Web.UI;
 using GenericRepository.EF5;
 using System.Text;
+using WebProject.Model;
+using Metas.Model;
 
 
 namespace GenericRepository
@@ -53,7 +54,7 @@ namespace GenericRepository
                 _Resultado = "Registro modificado satisfactoriamente...";
             }
             catch (Exception ex) { _Resultado = ex.Message; }
-        }        
+        }
         protected virtual void Eliminar(object sender, EventArgs e)
         {
             try
@@ -65,12 +66,14 @@ namespace GenericRepository
             catch (Exception ex) { _Resultado = ex.Message; }
         }
 
-        protected virtual void Limpiar (object sender,EventArgs e){
+        protected virtual void Limpiar(object sender, EventArgs e)
+        {
             foreach (Control item in Page.Form.Controls[0].Controls)
             {
-                if (item.GetType() == typeof(TextBox)) {
+                if (item.GetType() == typeof(TextBox))
+                {
                     ((TextBox)item).Text = "";
-                        
+
                 }
                 if (item.GetType() == typeof(RadioButtonList))
                 {
@@ -94,7 +97,7 @@ namespace GenericRepository
     /// Clase especializada para la generación de páginas web apartir del nombre de una instancia, usando reflextion
     /// </summary>
     /// <typeparam name="T">Instancia de Type a usar</typeparam>
-    public class PageDynamic<T> : AbstractPage where T : class,IId,new()
+    public class PageDynamic<T> : AbstractPage where T : class,IId, new()
     {
         private Panel _Panel = new Panel();
         /// <summary>
@@ -104,8 +107,8 @@ namespace GenericRepository
         {
             get { return _Panel; }
             set { _Panel = value; }
-        }        
-        List< KeyValuePair<string, string>> _Fields = new List<KeyValuePair<string, string>>();
+        }
+        List<KeyValuePair<string, string>> _Fields = new List<KeyValuePair<string, string>>();
         /// <summary>
         /// Listado de campos y tipo de valor para a creación de los elementos y validar sus tipos de datos
         /// </summary>
@@ -126,9 +129,11 @@ namespace GenericRepository
         /// <summary>
         /// Instancia de Label para mostrar notificación de las operaciones básicas
         /// </summary>
-        public Label lblEstatus {
-            
-            get {
+        public Label lblEstatus
+        {
+
+            get
+            {
                 return _Panel.Controls.OfType<Label>().Where(x => x.ID == "lblEstatus").FirstOrDefault();
             }
         }
@@ -141,11 +146,11 @@ namespace GenericRepository
             Type TDynamic = null;
 
             base.CheckParametrosUrlQueryString();
-            
+
             if (string.IsNullOrEmpty(base.Clase))
                 TDynamic = typeof(T);
             else
-                TDynamic = Type.GetType(typeof(T).Namespace +"."+ base.Clase);
+                TDynamic = Type.GetType(typeof(T).Namespace + "." + base.Clase);
 
             base.OnInit(e);
 
@@ -244,7 +249,7 @@ namespace GenericRepository
             #endregion
 
             #region Listado
-            _Panel.Controls.Add(new LiteralControl("<table class='table table-condensed'><thead><tr>"));
+            _Panel.Controls.Add(new LiteralControl("<table class='table table-condensed table-striped'><thead><tr>"));
             foreach (KeyValuePair<string, string> headers in _Fields)
             {
                 _Panel.Controls.Add(new LiteralControl("<td>" + headers.Key + "</td>"));
@@ -254,18 +259,19 @@ namespace GenericRepository
 
             _Listado = model.Listado<T>().ToList();
             foreach (T item in _Listado)
-            {_Panel.Controls.Add(new LiteralControl("<tr>"));
+            {
+                _Panel.Controls.Add(new LiteralControl("<tr>"));
                 foreach (KeyValuePair<string, string> campo in _Fields)
                 {
-                    
+
                     Type tipoDePropiedad = Type.GetType("System." + campo.Value);
                     PropertyInfo propiedad = item.GetType().GetProperty(campo.Key);
                     object resultado = propiedad.GetValue(item, null);
-                    if(campo.Key=="Id")
-                        _Panel.Controls.Add(new LiteralControl("<td><a href='?Id="+resultado.ToString() +"'><b class='fa fa-edit'></b></a></td>"));
+                    if (campo.Key == "Id")
+                        _Panel.Controls.Add(new LiteralControl("<td><a href='?Id=" + resultado.ToString() + "'><b class='fa fa-edit'></b></a></td>"));
                     else
-                    _Panel.Controls.Add(new LiteralControl("<td>" + resultado.ToString() + "</td>"));
-                   
+                        _Panel.Controls.Add(new LiteralControl("<td>" + resultado.ToString() + "</td>"));
+
                 } _Panel.Controls.Add(new LiteralControl("</tr>"));
             }
             _Panel.Controls.Add(new LiteralControl("</tbody></table>"));
@@ -308,15 +314,15 @@ namespace GenericRepository
 
         protected override void OnLoad(EventArgs e)
         {
-              base.OnLoad(e);
-              if (!Page.IsPostBack)
-              {
-                  if (base.Id > 0)
-                  {
-                      FillCampos(model.Obtener<T>(base.Id));
-                  }
-                  RefreshListado();
-              }
+            base.OnLoad(e);
+            if (!Page.IsPostBack)
+            {
+                if (base.Id > 0)
+                {
+                    FillCampos(model.Obtener<T>(base.Id));
+                }
+                RefreshListado();
+            }
         }
         private void RefreshListado()
         {
@@ -341,7 +347,8 @@ namespace GenericRepository
             {
                 _Resultado = ex.Message;
             }
-            finally{
+            finally
+            {
                 lblEstatus.Text = _Resultado;
             }
         }
@@ -350,11 +357,12 @@ namespace GenericRepository
         {
             try
             {
-                model.Agregar<T>(this.ObjectToUpdate());              
+                model.Agregar<T>(this.ObjectToUpdate());
                 _Resultado = "Registro agregado satisfactoriamente...";
             }
             catch (Exception ex) { _Resultado = ex.Message; }
-            finally {
+            finally
+            {
                 lblEstatus.Text = _Resultado;
                 Limpiar(sender, e);
             }
@@ -363,7 +371,7 @@ namespace GenericRepository
         {
             try
             {
-                model.Modificar<T>(this.ObjectToUpdate());                
+                model.Modificar<T>(this.ObjectToUpdate());
                 _Resultado = "Registro modificado satisfactoriamente...";
             }
             catch (Exception ex) { _Resultado = ex.Message; }
@@ -378,7 +386,7 @@ namespace GenericRepository
             try
             {
                 model.Eliminar<T>(this.ObjectToUpdate());
-                
+
                 _Resultado = "Registro eliminado satisfactoriamente...";
             }
             catch (Exception ex) { _Resultado = ex.Message; }
@@ -438,7 +446,7 @@ namespace GenericRepository
         }
     }
 
-    
+
     namespace EF4
     {
         [Obsolete("Usar GenericRepository.EF5", true)]
