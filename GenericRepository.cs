@@ -365,6 +365,7 @@ namespace GenericRepository
             {
                 lblEstatus.Text = _Resultado;
                 Limpiar(sender, e);
+                
             }
         }
         protected virtual void Modificar(object sender, EventArgs e)
@@ -379,6 +380,7 @@ namespace GenericRepository
             {
                 lblEstatus.Text = _Resultado;
                 Limpiar(sender, e);
+                
             }
         }
         protected virtual void Eliminar(object sender, EventArgs e)
@@ -394,6 +396,7 @@ namespace GenericRepository
             {
                 lblEstatus.Text = _Resultado;
                 Limpiar(sender, e);
+                
             }
         }
         protected virtual void Limpiar(object sender, EventArgs e)
@@ -417,9 +420,13 @@ namespace GenericRepository
                 }
             }
             RefreshListado();
-            if (((Button)sender).Text == "Limpiar")
+            Button btn=((Button)sender);
+            if (btn.Text == "Limpiar" || btn.Text == "Eliminar")
             {
                 Response.Redirect(Request.Url.LocalPath, false);
+            }
+            else {
+                Response.Redirect(Request.Url.AbsoluteUri, false);
             }
         }
 
@@ -669,7 +676,7 @@ namespace GenericRepository
         public class GenericRepository
         {
             //INSTANCIA DE OBJETO DEL EDM
-            protected static DesarrollosEntities context = new DesarrollosEntities();
+            protected static MetasEntities context = new MetasEntities();
 
             protected ObjectContext model = ((IObjectContextAdapter)context).ObjectContext;
 
@@ -741,17 +748,12 @@ namespace GenericRepository
             {
                 return model.CreateQuery<T>(GetEntitySetName<T>());
             }
-
-
-
-
+            
         }
-
         public interface IPropiedades
         {
             int Id { get; set; }
         }
-
         public class GenericCollection<T> : ICollection<T>, IList<T> where T : IPropiedades, new()
         {
             List<T> lista = new List<T>();
