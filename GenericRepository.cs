@@ -278,7 +278,7 @@ namespace GenericRepository
                 _Panel.Controls.Add(new LiteralControl("<td>" + headers.Key + "</td>"));
             }
             _Panel.Controls.Add(new LiteralControl("</tr></thead>"));
-            _Panel.Controls.Add(new LiteralControl("<tbody>"));
+            _Panel.Controls.Add(new LiteralControl("<tbody id='toPaginador'>"));
 
             _Listado = model.Listado<T>().ToList();
             foreach (T item in _Listado)
