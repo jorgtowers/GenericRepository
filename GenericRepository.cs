@@ -3,7 +3,7 @@
  * CREADOR: 	Jorge L. Torres A.
  * NOTA: 		Cambiar el nombre App por el nombre que se le de al objeto en javascript
  * METODO: 		Para implementar un nuevo método tomar como referencia código "App.prototype.NuevoMetodo"
- * ACTUALIZADO: 24-03-2015 09:47PM
+ * ACTUALIZADO: 24-03-2015 10:10AM
  * CREADO:      20-03-2015 11:53PM
  */
 using System;
@@ -291,7 +291,7 @@ namespace GenericRepository
                     PropertyInfo propiedad = item.GetType().GetProperty(campo.Key);
                     object resultado = propiedad.GetValue(item, null);
                     if (campo.Key == "Id")
-                        _Panel.Controls.Add(new LiteralControl("<td><a href='?Id=" + resultado.ToString() + "'><b class='fa fa-edit'></b></a></td>"));
+                        _Panel.Controls.Add(new LiteralControl("<td><a href='?Id=" + (resultado != null ? resultado.ToString() : "") + "'><b class='fa fa-edit'></b></a></td>"));
                     else
                     {
                         if (campo.Value != "Boolean")
@@ -472,7 +472,6 @@ namespace GenericRepository
                 Response.Redirect(Request.Url.AbsoluteUri, false);
             }
         }
-
     }
 
     public class Utils
