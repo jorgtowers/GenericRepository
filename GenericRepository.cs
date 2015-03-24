@@ -215,6 +215,7 @@ namespace GenericRepository
                     }
                     if (tipo == "Boolean")
                     {
+                        _Fields.Add(new KeyValuePair<string, string>(nombre, tipo));
                         _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'>" + nombre + "</td><td>"));
                         CheckBox t = new CheckBox() { ID = "chk" + nombre.Replace(" ", "") };
                         _Panel.Controls.Add(t);
