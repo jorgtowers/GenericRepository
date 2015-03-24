@@ -3,7 +3,7 @@
  * CREADOR: 	Jorge L. Torres A.
  * NOTA: 		Cambiar el nombre App por el nombre que se le de al objeto en javascript
  * METODO: 		Para implementar un nuevo método tomar como referencia código "App.prototype.NuevoMetodo"
- * ACTUALIZADO: 23-03-2015 09:52PM
+ * ACTUALIZADO: 23-03-2015 10:38PM
  */
 using System;
 using System.Collections.Generic;
@@ -161,11 +161,13 @@ namespace GenericRepository
 
 
             _Panel = this.Controls.OfType<Panel>().FirstOrDefault();
-
-            if (_Panel == null) {
-                System.Web.UI.HtmlControls.HtmlForm form = this.Controls[0].Controls.OfType<System.Web.UI.HtmlControls.HtmlForm>().FirstOrDefault();
+            if (_Panel == null)
+            {
                 _Panel = new System.Web.UI.WebControls.Panel() { ID = "PN" };
-                form.Controls.Add(_Panel);
+                MasterPage masterPage = this.Master;
+                HtmlForm form = this.Master.Controls.OfType<System.Web.UI.HtmlControls.HtmlForm>().FirstOrDefault();
+                ContentPlaceHolder cph = form.Controls.OfType<ContentPlaceHolder>().FirstOrDefault();
+                cph.Controls.Add(_Panel);
             }
 
             base.OnInit(e);
