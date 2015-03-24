@@ -3,7 +3,8 @@
  * CREADOR: 	Jorge L. Torres A.
  * NOTA: 		Cambiar el nombre App por el nombre que se le de al objeto en javascript
  * METODO: 		Para implementar un nuevo método tomar como referencia código "App.prototype.NuevoMetodo"
- * ACTUALIZADO: 24-03-2015 09:07PM
+ * ACTUALIZADO: 24-03-2015 09:25PM
+ * CREADO:      20-03-2015 11:53PM
  */
 using System;
 using System.Collections.Generic;
@@ -214,7 +215,7 @@ namespace GenericRepository
                     }
                     if (tipo == "Boolean")
                     {
-                        _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'" + nombre + "</td><td>"));
+                        _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'>" + nombre + "</td><td>"));
                         CheckBox t = new CheckBox() { ID = "chk" + nombre.Replace(" ", "") };
                         _Panel.Controls.Add(t);
                         _Panel.Controls.Add(new LiteralControl("</td></tr>"));
