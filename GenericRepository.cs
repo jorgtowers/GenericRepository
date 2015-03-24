@@ -3,7 +3,7 @@
  * CREADOR: 	Jorge L. Torres A.
  * NOTA: 		Cambiar el nombre App por el nombre que se le de al objeto en javascript
  * METODO: 		Para implementar un nuevo método tomar como referencia código "App.prototype.NuevoMetodo"
- * ACTUALIZADO: 24-03-2015 09:25PM
+ * ACTUALIZADO: 24-03-2015 09:47PM
  * CREADO:      20-03-2015 11:53PM
  */
 using System;
@@ -107,7 +107,7 @@ namespace GenericRepository
     /// <typeparam name="T">Instancia de Type a usar</typeparam>
     public class PageDynamic<T> : AbstractPage where T : class,IId, new()
     {
-        private Panel _Panel = new Panel();
+        private Panel _Panel = null;
         /// <summary>
         /// Instancia del Panel que será usado para crear todos los elementos de la instancia del objeto recibido
         /// </summary>
@@ -162,13 +162,16 @@ namespace GenericRepository
 
 
             _Panel = this.Controls.OfType<Panel>().FirstOrDefault();
+
             if (_Panel == null)
             {
                 _Panel = new System.Web.UI.WebControls.Panel() { ID = "PN" };
                 MasterPage masterPage = this.Master;
                 HtmlForm form = this.Master.Controls.OfType<System.Web.UI.HtmlControls.HtmlForm>().FirstOrDefault();
                 ContentPlaceHolder cph = form.Controls.OfType<ContentPlaceHolder>().FirstOrDefault();
+
                 cph.Controls.Add(_Panel);
+
             }
 
             base.OnInit(e);
@@ -221,6 +224,7 @@ namespace GenericRepository
                         _Panel.Controls.Add(t);
                         _Panel.Controls.Add(new LiteralControl("</td></tr>"));
                     }
+
                 }
                 //if (TDynamic.Namespace == propiedad.PropertyType.Namespace)
                 //    sb.AppendLine("<b>Objeto Nombre:</b>" + propiedad.Name);
@@ -289,7 +293,12 @@ namespace GenericRepository
                     if (campo.Key == "Id")
                         _Panel.Controls.Add(new LiteralControl("<td><a href='?Id=" + resultado.ToString() + "'><b class='fa fa-edit'></b></a></td>"));
                     else
-                        _Panel.Controls.Add(new LiteralControl("<td>" + (resultado != null ? resultado.ToString() : "") + "</td>"));
+                    {
+                        if (campo.Value != "Boolean")
+                            _Panel.Controls.Add(new LiteralControl("<td>" + (resultado != null ? resultado.ToString() : "") + "</td>"));
+                        else
+                            _Panel.Controls.Add(new LiteralControl("<td><input type='checkbox' " + (resultado != null ? (resultado.ToString()=="True"?"checked":"") : "") + "/></td>"));
+                    }
 
                 } _Panel.Controls.Add(new LiteralControl("</tr>"));
             }
@@ -318,6 +327,14 @@ namespace GenericRepository
                     Type.GetType("System." + par.Value);
                     _.GetType().GetProperty(par.Key).SetValue(_, Convert.ChangeType(txt.Text, Type.GetType("System." + par.Value)), null);
                 }
+            }
+            List<CheckBox> chks = _Panel.Controls.OfType<CheckBox>().ToList();
+            foreach (CheckBox chk in chks)
+            {
+
+                KeyValuePair<string, string> par = Fields.Where(x => x.Key == chk.ID.Replace("chk", "")).FirstOrDefault();
+                    Type.GetType("System." + par.Value);
+                    _.GetType().GetProperty(par.Key).SetValue(_, chk.Checked, null);               
             }
             return _;
         }
@@ -359,6 +376,11 @@ namespace GenericRepository
                         {
                             object result = item.GetType().GetProperty(campo.Key).GetValue(item, null);
                             ((TextBox)control).Text = (result != null ? result : "").ToString();
+                        }
+                        if (control.ID == "chk" + campo.Key)
+                        {
+                            object result = item.GetType().GetProperty(campo.Key).GetValue(item, null);
+                            ((CheckBox)control).Checked = (Boolean)result;
                         }
                     }
                 }
