@@ -3,7 +3,7 @@
  * CREADOR: 	Jorge L. Torres A.
  * NOTA: 		Cambiar el nombre App por el nombre que se le de al objeto en javascript
  * METODO: 		Para implementar un nuevo método tomar como referencia código "App.prototype.NuevoMetodo"
- * ACTUALIZADO: 23-03-2015 10:38PM
+ * ACTUALIZADO: 24-03-2015 09:07PM
  */
 using System;
 using System.Collections.Generic;
@@ -205,21 +205,20 @@ namespace GenericRepository
                         }
                         else
                             _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'>" + nombre + "</td><td>"));
-                        if (nombre == "Password")
-                        {
-                            t.TextMode = TextBoxMode.Password;
-                        }
+                        //if (nombre == "Password")
+                        //{
+                        //    t.TextMode = TextBoxMode.Password;
+                        //}
                         _Panel.Controls.Add(t);
                         _Panel.Controls.Add(new LiteralControl("</td></tr>"));
                     }
                     if (tipo == "Boolean")
                     {
-                        _Panel.Controls.Add(new LiteralControl("<tr><td>" + nombre + "</td><td>"));
+                        _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'" + nombre + "</td><td>"));
                         CheckBox t = new CheckBox() { ID = "chk" + nombre.Replace(" ", "") };
                         _Panel.Controls.Add(t);
                         _Panel.Controls.Add(new LiteralControl("</td></tr>"));
                     }
-
                 }
                 //if (TDynamic.Namespace == propiedad.PropertyType.Namespace)
                 //    sb.AppendLine("<b>Objeto Nombre:</b>" + propiedad.Name);
