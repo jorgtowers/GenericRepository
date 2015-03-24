@@ -12,15 +12,15 @@ using System.Web.UI.WebControls;
 using System.Web.UI;
 using GenericRepository.EF5;
 using System.Text;
-using PageDynamc.Model;
-using System.Data.Entity.Core.Objects;
-using System.Data.Entity.Core.Objects.DataClasses;
+using NM.Model;
+using System.Data.Objects;
+using NM.SR;
 
 
 
 namespace GenericRepository
 {
-    public class PageGeneric<T> : AbstractPage where T : class,new()
+    public class PageGeneric<T> : AbstractPagina where T : class,new()
     {
 
         private T _ObjectToUpdate = new T();
@@ -97,7 +97,7 @@ namespace GenericRepository
     /// Clase especializada para la generación de páginas web apartir del nombre de una instancia, usando reflextion
     /// </summary>
     /// <typeparam name="T">Instancia de Type a usar</typeparam>
-    public class PageDynamic<T> : AbstractPage where T : class,IId, new()
+    public class PageDynamic<T> : AbstractPagina where T : class,IId, new()
     {
         private Panel _Panel = new Panel();
         /// <summary>
@@ -196,7 +196,6 @@ namespace GenericRepository
                     }
                     if (tipo == "Boolean")
                     {
-                        _Fields.Add(new KeyValuePair<string, string>(nombre, tipo));
                         _Panel.Controls.Add(new LiteralControl("<tr><td>" + nombre + "</td><td>"));
                         CheckBox t = new CheckBox() { ID = "chk" + nombre.Replace(" ", "") };
                         _Panel.Controls.Add(t);
@@ -269,7 +268,7 @@ namespace GenericRepository
                     PropertyInfo propiedad = item.GetType().GetProperty(campo.Key);
                     object resultado = propiedad.GetValue(item, null);
                     if (campo.Key == "Id")
-                        _Panel.Controls.Add(new LiteralControl("<td><a href='?Id=" + (resultado != null ? resultado.ToString() : "") + "'><b class='fa fa-edit'></b></a></td>"));
+                        _Panel.Controls.Add(new LiteralControl("<td><a href='?Id=" + resultado.ToString() + "'><b class='fa fa-edit'></b></a></td>"));
                     else
                         _Panel.Controls.Add(new LiteralControl("<td>" + (resultado != null ? resultado.ToString() : "") + "</td>"));
 
@@ -300,15 +299,6 @@ namespace GenericRepository
                     Type.GetType("System." + par.Value);
                     _.GetType().GetProperty(par.Key).SetValue(_, Convert.ChangeType(txt.Text, Type.GetType("System." + par.Value)), null);
                 }
-            }
-            List<CheckBox> chks = _Panel.Controls.OfType<CheckBox>().ToList();
-            foreach (CheckBox chk in chks)
-            {
-              
-                    KeyValuePair<string, string> par = Fields.Where(x => x.Key == chk.ID.Replace("chk", "")).FirstOrDefault();
-                    Type.GetType("System." + par.Value);
-                    _.GetType().GetProperty(par.Key).SetValue(_, Convert.ChangeType(chk.Checked, Type.GetType("System." + par.Value)), null);
-                
             }
             return _;
         }
@@ -349,11 +339,7 @@ namespace GenericRepository
                         if (control.ID == "txt" + campo.Key)
                         {
                             object result=item.GetType().GetProperty(campo.Key).GetValue(item, null);
-                            ((TextBox)control).Text = (result!=null?result:"").ToString();
-                        }
-                        if (control.ID == "chk" + campo.Key)
-                        {
-                            ((CheckBox)control).Checked = Convert.ToBoolean(item.GetType().GetProperty(campo.Key).GetValue(item, null));
+                            ((TextBox)control).Text = (result != null ? result : "").ToString();
                         }
                     }
                 }
@@ -380,7 +366,7 @@ namespace GenericRepository
             {
                 lblEstatus.Text = _Resultado;
                 Limpiar(sender, e);
-                
+
             }
         }
         protected virtual void Modificar(object sender, EventArgs e)
@@ -395,7 +381,7 @@ namespace GenericRepository
             {
                 lblEstatus.Text = _Resultado;
                 Limpiar(sender, e);
-                
+
             }
         }
         protected virtual void Eliminar(object sender, EventArgs e)
@@ -411,7 +397,7 @@ namespace GenericRepository
             {
                 lblEstatus.Text = _Resultado;
                 Limpiar(sender, e);
-                
+
             }
         }
         protected virtual void Limpiar(object sender, EventArgs e)
@@ -435,12 +421,13 @@ namespace GenericRepository
                 }
             }
             RefreshListado();
-            Button btn=((Button)sender);
+            Button btn = ((Button)sender);
             if (btn.Text == "Limpiar" || btn.Text == "Eliminar")
             {
                 Response.Redirect(Request.Url.LocalPath, false);
             }
-            else {
+            else
+            {
                 Response.Redirect(Request.Url.AbsoluteUri, false);
             }
         }
@@ -691,7 +678,7 @@ namespace GenericRepository
         public class GenericRepository
         {
             //INSTANCIA DE OBJETO DEL EDM
-            protected static MetasEntities context = new MetasEntities();
+            protected static Entities context = new Entities();
 
             protected ObjectContext model = ((IObjectContextAdapter)context).ObjectContext;
 
@@ -763,7 +750,7 @@ namespace GenericRepository
             {
                 return model.CreateQuery<T>(GetEntitySetName<T>());
             }
-            
+
         }
         public interface IPropiedades
         {
@@ -950,7 +937,7 @@ namespace GenericRepository
             /// Retorna objeto solicitado por su Id
             /// </summary>
             /// <typeparam name="T">Type de la clase solicitada</typeparam>
-            /// <param name="id">Id del objeto a consultar, el cual debe implementar la interfaz EntityFramework.EF5.IId</param>
+            /// <param name="id">Id del objeto a consultar, el cual debe implementar la interfaz GenericRepository.EF5.IId</param>
             /// <returns>Returna instancia del objeto del tipo T</returns>
             public virtual T Obtener<T>(int id) where T : class,IId
             {
