@@ -1,3 +1,10 @@
+/*!
+ * ABOUT:		Snippet Javascript implement OOP
+ * CREADOR: 	Jorge L. Torres A.
+ * NOTA: 		Cambiar el nombre App por el nombre que se le de al objeto en javascript
+ * METODO: 		Para implementar un nuevo método tomar como referencia código "App.prototype.NuevoMetodo"
+ * ACTUALIZADO: 23-03-2015 09:52PM
+ */
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,15 +19,15 @@ using System.Web.UI.WebControls;
 using System.Web.UI;
 using GenericRepository.EF5;
 using System.Text;
-using NM.Model;
-using System.Data.Objects;
-using NM.SR;
+using PageDynamc.Model;
+using System.Data.Entity.Core.Objects;
+using System.Data.Entity.Core.Objects.DataClasses;
 
 
 
 namespace GenericRepository
 {
-    public class PageGeneric<T> : AbstractPagina where T : class,new()
+    public class PageGeneric<T> : AbstractPage where T : class,new()
     {
 
         private T _ObjectToUpdate = new T();
@@ -97,7 +104,7 @@ namespace GenericRepository
     /// Clase especializada para la generación de páginas web apartir del nombre de una instancia, usando reflextion
     /// </summary>
     /// <typeparam name="T">Instancia de Type a usar</typeparam>
-    public class PageDynamic<T> : AbstractPagina where T : class,IId, new()
+    public class PageDynamic<T> : AbstractPage where T : class,IId, new()
     {
         private Panel _Panel = new Panel();
         /// <summary>
@@ -151,6 +158,15 @@ namespace GenericRepository
                 TDynamic = typeof(T);
             else
                 TDynamic = Type.GetType(typeof(T).Namespace + "." + base.Clase);
+
+
+            _Panel = this.Controls.OfType<Panel>().FirstOrDefault();
+
+            if (_Panel == null) {
+                System.Web.UI.HtmlControls.HtmlForm form = this.Controls[0].Controls.OfType<System.Web.UI.HtmlControls.HtmlForm>().FirstOrDefault();
+                _Panel = new System.Web.UI.WebControls.Panel() { ID = "PN" };
+                form.Controls.Add(_Panel);
+            }
 
             base.OnInit(e);
 
@@ -338,7 +354,7 @@ namespace GenericRepository
                     {
                         if (control.ID == "txt" + campo.Key)
                         {
-                            object result=item.GetType().GetProperty(campo.Key).GetValue(item, null);
+                            object result = item.GetType().GetProperty(campo.Key).GetValue(item, null);
                             ((TextBox)control).Text = (result != null ? result : "").ToString();
                         }
                     }
@@ -678,7 +694,7 @@ namespace GenericRepository
         public class GenericRepository
         {
             //INSTANCIA DE OBJETO DEL EDM
-            protected static Entities context = new Entities();
+            protected static MetasEntities context = new MetasEntities();
 
             protected ObjectContext model = ((IObjectContextAdapter)context).ObjectContext;
 
