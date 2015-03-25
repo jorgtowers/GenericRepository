@@ -490,17 +490,50 @@ namespace GenericRepository
             string Descripcion { get; set; }
             int Id { get; set; }
         }
-        public static void Llenar<T>(ListControl ctrl, List<T> datos, bool todos = false, bool seleccionar = false) where T : IDescripcionId, new()
+        public static void Llenar<T>(ListControl ctrl, List<T> datos, bool todos = false, bool seleccionar = false, bool orderByDescripcion = false) where T : IDescripcionId, new()
         {
             List<T> t = datos;
             if (todos)
                 t.Add(new T() { Id = -1, Descripcion = "( -- Todos -- )" });
             if (seleccionar)
-                t.Add(new T() { Id = -1, Descripcion = "( -- Todos -- )" });
+                t.Add(new T() { Id = -1, Descripcion = "( -- Seleccionar -- )" });
             ctrl.DataTextField = "Descripcion";
             ctrl.DataValueField = "Id";
-            ctrl.DataSource = t.OrderBy(x => x.Id);
+            if (orderByDescripcion)
+                ctrl.DataSource = t.OrderBy(x => x.Descripcion);
+            else
+                ctrl.DataSource = t.OrderBy(x => x.Id);
+
             ctrl.DataBind();
+        }
+        public static string Duracion(DateTime desde,DateTime hasta)
+        {
+            TimeSpan span = hasta - desde;
+            if (span.Days > 365)
+            {
+                int years = (span.Days / 365);
+                if (span.Days % 365 != 0)
+                    years += 1;
+                return String.Format("{0} {1}",years, years == 1 ? "año" : "años");
+            }
+            if (span.Days > 30)
+            {
+                int months = (span.Days / 30);
+                if (span.Days % 31 != 0)
+                    months += 1;
+                return String.Format("{0} {1}",months, months == 1 ? "mes" : "meses");
+            }
+            if (span.Days > 0)
+                return String.Format("{0} {1}", span.Days, span.Days == 1 ? "día" : "días");
+            if (span.Hours > 0)
+                return String.Format("{0} {1}",span.Hours, span.Hours == 1 ? "hora" : "horas");
+            if (span.Minutes > 0)
+                return String.Format("{0} {1}",span.Minutes, span.Minutes == 1 ? "minuto" : "minutos");
+            if (span.Seconds > 5)
+                return String.Format("{0} segundos", span.Seconds);
+            if (span.Seconds <= 5)
+                return "ahora";
+            return string.Empty;
         }
     }
 
