@@ -3,7 +3,7 @@
  * CREADOR: 	Jorge L. Torres A.
  * NOTA: 		Cambiar el nombre App por el nombre que se le de al objeto en javascript
  * METODO: 		Para implementar un nuevo método tomar como referencia código "App.prototype.NuevoMetodo"
- * ACTUALIZADO: 24-03-2015 10:10AM
+ * ACTUALIZADO: 25-03-2015 02:30PM
  * CREADO:      20-03-2015 11:53PM
  */
 using System;
