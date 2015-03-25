@@ -97,15 +97,15 @@ namespace GenericRepository
                         radio.Selected = false;
                     }
                 }
-                Button btn = ((Button)sender);
-                if (btn.Text == "Limpiar" || btn.Text == "Eliminar")
-                {
-                    Response.Redirect(Request.Url.LocalPath, false);
-                }
-                else
-                {
-                    Response.Redirect(Request.Url.AbsoluteUri, false);
-                }
+            }
+            Button btn = ((Button)sender);
+            if (btn.Text == "Limpiar" || btn.Text == "Eliminar")
+            {
+                Response.Redirect(Request.Url.LocalPath, false);
+            }
+            else
+            {
+                Response.Redirect(Request.Url.AbsoluteUri, false);
             }
         }
 
