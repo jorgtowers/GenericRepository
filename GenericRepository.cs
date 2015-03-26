@@ -1023,7 +1023,10 @@ namespace GenericRepository
             /// <returns>Returna instancia del objeto del tipo T</returns>
             public virtual T Obtener<T>(int id) where T : class,IId
             {
-                return Listado<T>().Where(x => x.Id == id).FirstOrDefault();
+                //return Listado<T>().Where(x => x.Id == id).FirstOrDefault();
+                //Error: Varias instancias de IEntityChangeTracker no pueden hacer referencia a un objeto entidad.
+                //Solución: agregar ".AsNoTracking()"
+                return Listado<T>().Where(x => x.Id == id).AsNoTracking().FirstOrDefault();
             }
             /// <summary>
             /// Permite obtener un IQueryable para ejecutar un listado del Type de la clase solicitada
