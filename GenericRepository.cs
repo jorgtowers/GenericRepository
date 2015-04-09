@@ -1,10 +1,12 @@
 /*!
- * ABOUT:		Snippet Javascript implement OOP
- * CREADOR: 	Jorge L. Torres A.
- * NOTA: 		Cambiar el nombre App por el nombre que se le de al objeto en javascript
- * METODO: 		Para implementar un nuevo método tomar como referencia código "App.prototype.NuevoMetodo"
- * ACTUALIZADO: 25-03-2015 02:30PM
- * CREADO:      20-03-2015 11:53PM
+ * ABOUT.......: Clase generica que permite conectarse a un EDM, en varías versiones de EF4, EF4SupportEF5 y EF5
+ * CREADOR.....: Jorge L. Torres A.
+ * ACTUALIACION: Se mejora metodo EF5.GenericRepository.Modificar<T>(T entity), generaba error 
+                 "Un objeto con la misma clave ya existe en el ObjectStateManager. El ObjectStateManager puede realizar un seguimiento de múltiples objetos con la misma clave."
+                 se mejora metodo EF5.GenericRepository.Obtener<T>(int Id), se elimina la restricción de usar la interfaz EF5.IId
+                 antes: T Obtener<T>(int id) where T : class,IId ahora: T Obtener<T>(int id) where T : class
+ * ACTUALIZADO.: 09-04-2015 10:19PM
+ * CREADO......: 20-03-2015 11:53PM
  */
 using System;
 using System.Collections.Generic;
@@ -1019,14 +1021,11 @@ namespace GenericRepository
             /// Retorna objeto solicitado por su Id
             /// </summary>
             /// <typeparam name="T">Type de la clase solicitada</typeparam>
-            /// <param name="id">Id del objeto a consultar, el cual debe implementar la interfaz GenericRepository.EF5.IId</param>
+            /// <param name="id">Id del objeto a consultar</param>
             /// <returns>Returna instancia del objeto del tipo T</returns>
-            public virtual T Obtener<T>(int id) where T : class,IId
+            public virtual T Obtener<T>(int id) where T : class
             {
-                //return Listado<T>().Where(x => x.Id == id).FirstOrDefault();
-                //Error: Varias instancias de IEntityChangeTracker no pueden hacer referencia a un objeto entidad.
-                //Solución: agregar ".AsNoTracking()"
-                return Listado<T>().Where(x => x.Id == id).AsNoTracking().FirstOrDefault();
+                return _context.Set<T>().Find(id);
             }
             /// <summary>
             /// Permite obtener un IQueryable para ejecutar un listado del Type de la clase solicitada
@@ -1090,7 +1089,22 @@ namespace GenericRepository
             /// <param name="entity">Instancia del objeto a agregar</param>
             public virtual void Modificar<T>(T entity) where T : class
             {
-                _context.Entry<T>(entity).State = EntityState.Modified;
+                var entry = _context.Entry(entity);
+                var pkey = entity.GetType().GetProperty("Id").GetValue(entity);
+                if (entry.State == EntityState.Detached)
+                {
+                    var set = _context.Set<T>();
+                    T attachedEntity = set.Find(pkey);
+                    if (attachedEntity != null)
+                    {
+                        var attachedEntry = _context.Entry(attachedEntity);
+                        attachedEntry.CurrentValues.SetValues(entity);
+                    }
+                    else
+                    {
+                        entry.State = EntityState.Modified; 
+                    }
+                }
                 Save();
             }
             /// <summary>
