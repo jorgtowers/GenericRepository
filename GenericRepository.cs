@@ -1,11 +1,8 @@
 /*!
  * ABOUT.......: Clase generica que permite conectarse a un EDM, en varías versiones de EF4, EF4SupportEF5 y EF5
  * CREADOR.....: Jorge L. Torres A.
- * ACTUALIACION: Se mejora metodo EF5.GenericRepository.Modificar<T>(T entity), generaba error 
-                 "Un objeto con la misma clave ya existe en el ObjectStateManager. El ObjectStateManager puede realizar un seguimiento de múltiples objetos con la misma clave."
-                 se mejora metodo EF5.GenericRepository.Obtener<T>(int Id), se elimina la restricción de usar la interfaz EF5.IId
-                 antes: T Obtener<T>(int id) where T : class,IId ahora: T Obtener<T>(int id) where T : class
- * ACTUALIZADO.: 09-04-2015 10:19PM
+ * ACTUALIACION: Se mejora metodo EF5.GenericRepository.Obtener<T>(int Id), se agrega funcion que recibe predicado de Expresion LinQ para buscar y se incluye opcion de incluir tablas dependientes
+ * ACTUALIZADO.: 10-04-2015 02:06AM
  * CREADO......: 20-03-2015 11:53PM
  */
 using System;
@@ -1023,9 +1020,52 @@ namespace GenericRepository
             /// <typeparam name="T">Type de la clase solicitada</typeparam>
             /// <param name="id">Id del objeto a consultar</param>
             /// <returns>Returna instancia del objeto del tipo T</returns>
+            [Obsolete("Se recomienda usar T Obtener<T>(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes) where T : class",false)]
             public virtual T Obtener<T>(int id) where T : class
             {
-                return _context.Set<T>().Find(id);
+                //return Listado<T>().Where(x => x.Id == id).FirstOrDefault();
+                //Error: Varias instancias de IEntityChangeTracker no pueden hacer referencia a un objeto entidad.
+                //Solución: agregar ".AsNoTracking()"
+                //return Listado<T>().Where(x => x.Id == id).AsNoTracking().FirstOrDefault();
+                return _context.Set<T>().Find(id);               
+            }
+            /// <summary>
+            /// Retorna objeto solicitado filtrando el valpor el predicado de Linq
+            /// </summary>
+            /// <typeparam name="T">Type de la clase solicitada</typeparam>
+            /// <param name="predicate">Expression(Func(T, bool)) LinQ que permite efectuar un filtro por ejemplo: predicado sería (x=>x.Id==1 && x.Fecha.Value==DateTime.Now.Year)</param>
+            /// <param name="includes">IEnumerable(string) con listado de las propieades de Navegación y/o tablas dependientes del objeto que se esté recuperando</param>
+            /// <returns>Returna instancia del objeto del tipo T</returns>
+            [Obsolete("Se recomienda usar T Obtener<T>(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes) where T : class",false)  ]
+            public T Obtener<T>(Expression<Func<T, bool>> predicate , IEnumerable<string> includePaths ) where T : class
+            {
+                IQueryable<T> query = _context.Set<T>().AsNoTracking();
+                if (predicate != null) {
+                    query = query.Where(predicate);
+                }
+                if (includePaths != null){
+                    query = includePaths.Aggregate(query, (current, includePath) => current.Include<T>(includePath));
+                }
+                return query.FirstOrDefault();
+            }
+            /// <summary>
+            /// Retorna objeto solicitado filtrando el valpor el predicado de Linq
+            /// </summary>
+            /// <typeparam name="T">Type de la clase solicitada</typeparam>
+            /// <param name="predicate">Expression(Func(T, bool)) LinQ que permite efectuar un filtro por ejemplo: predicado sería (x=>x.Id==1 && x.Fecha.Value==DateTime.Now.Year)</param>
+            /// <param name="includes">Expression(Func(T, bool)) LinQ Permite incluir las propieades de Navegación y/o tablas dependientes del objeto que se esté recuperando</param>
+            /// <returns>Returna instancia del objeto del tipo T</returns>
+            public T Obtener<T>(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes) where T : class
+            {
+                var result = Listado<T>(includes);
+                if (includes.Any())
+                {
+                    foreach (var include in includes)
+                    {
+                        result = result.Include(include);
+                    }
+                }
+                return result.FirstOrDefault(predicate);
             }
             /// <summary>
             /// Permite obtener un IQueryable para ejecutar un listado del Type de la clase solicitada
@@ -1035,6 +1075,20 @@ namespace GenericRepository
             public virtual IQueryable<T> Listado<T>() where T : class
             {
                 return _context.Set<T>();
+            }
+           /// <summary>
+            /// Permite obtener un IQueryable para ejecutar un listado del Type de la clase solicitada, y el resutaldo implementa .AsNoTracking()
+           /// </summary>
+            /// <typeparam name="T">Type de la clase solicitada</typeparam>
+           /// <param name="includes">Predicado de Linq para incluir las dependencias</param>
+           /// <returns></returns>
+            public IQueryable<T> Listado<T>(params Expression<Func<T, object>>[] includes) where T : class
+            {
+                IQueryable<T> set = _context.Set<T>().AsNoTracking();
+                foreach (var include in includes){
+                    set = set.Include(include);
+                }
+                return set.AsQueryable<T>();
             }
             /// <summary>
             /// Agrega un nuevo elemento al Contexto
