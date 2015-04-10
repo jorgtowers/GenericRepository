@@ -24,7 +24,7 @@ using System.Text;
 using PageDynamc.Model;
 using System.Data.Entity.Core.Objects;
 using System.Data.Entity.Core.Objects.DataClasses;
-
+using System.Web.UI.HtmlControls;
 
 
 namespace GenericRepository
