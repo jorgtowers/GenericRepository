@@ -1,8 +1,10 @@
 /*!
  * ABOUT.......: Clase generica que permite conectarse a un EDM, en varías versiones de EF4, EF4SupportEF5 y EF5
  * CREADOR.....: Jorge L. Torres A.
- * ACTUALIACION: Se mejora metodo EF5.GenericRepository.Obtener<T>(int Id), se agrega funcion que recibe predicado de Expresion LinQ para buscar y se incluye opcion de incluir tablas dependientes
- * ACTUALIZADO.: 10-04-2015 02:06AM
+ * ACTUALIACION: Se agrega metodo: public DbEntityEntry<T> CheckIsAttached<T>(T entity) where T : class, 
+ *               permite validar contra error "Un objeto con la misma clave ya existe en el ObjectStateManager. El ObjectStateManager puede realizar un seguimiento de múltiples objetos con la misma clave."
+ *               aplicado a Modiciar<T> y Eliminar<T>
+ * ACTUALIZADO.: 10-04-2015 02:48AM
  * CREADO......: 20-03-2015 11:53PM
  */
 using System;
@@ -1068,20 +1070,22 @@ namespace GenericRepository
                 return result.FirstOrDefault(predicate);
             }
             /// <summary>
-            /// Permite obtener un IQueryable para ejecutar un listado del Type de la clase solicitada
+            /// Permite obtener un IQueryable para ejecutar un listado del Type de la clase solicitada, y el resutaldo implementa .AsNoTracking()
+            /// controla que no genere error: Varias instancias de IEntityChangeTracker no pueden hacer referencia a un objeto entidad
             /// </summary>
             /// <typeparam name="T">Type de la clase solicitada</typeparam>
             /// <returns>IQueriable para ejecutar un .ToList()</returns>
             public virtual IQueryable<T> Listado<T>() where T : class
             {
-                return _context.Set<T>();
+                return _context.Set<T>().AsNoTracking();
             }
-           /// <summary>
+            /// <summary>
             /// Permite obtener un IQueryable para ejecutar un listado del Type de la clase solicitada, y el resutaldo implementa .AsNoTracking()
-           /// </summary>
+            /// controla que no genere error: Varias instancias de IEntityChangeTracker no pueden hacer referencia a un objeto entidad
+            /// </summary>
             /// <typeparam name="T">Type de la clase solicitada</typeparam>
-           /// <param name="includes">Predicado de Linq para incluir las dependencias</param>
-           /// <returns></returns>
+            /// <param name="includes">Predicado de Linq para incluir las dependencias</param>
+            /// <returns></returns>
             public IQueryable<T> Listado<T>(params Expression<Func<T, object>>[] includes) where T : class
             {
                 IQueryable<T> set = _context.Set<T>().AsNoTracking();
@@ -1120,8 +1124,8 @@ namespace GenericRepository
             /// <param name="entity">Instancia del objeto a agregar</param>
             public virtual void Eliminar<T>(T entity) where T : class
             {
-
-                _context.Entry<T>(entity).State = EntityState.Deleted;
+                var a = CheckIsAttached<T>(entity);
+                a.State = EntityState.Deleted;
                 Save();
             }
             /// <summary>
@@ -1143,24 +1147,10 @@ namespace GenericRepository
             /// <param name="entity">Instancia del objeto a agregar</param>
             public virtual void Modificar<T>(T entity) where T : class
             {
-                var entry = _context.Entry(entity);
-                var pkey = entity.GetType().GetProperty("Id").GetValue(entity);
-                if (entry.State == EntityState.Detached)
-                {
-                    var set = _context.Set<T>();
-                    T attachedEntity = set.Find(pkey);
-                    if (attachedEntity != null)
-                    {
-                        var attachedEntry = _context.Entry(attachedEntity);
-                        attachedEntry.CurrentValues.SetValues(entity);
-                    }
-                    else
-                    {
-                        entry.State = EntityState.Modified; 
-                    }
-                }
+                var a = CheckIsAttached<T>(entity);
+                a.State = EntityState.Modified;
                 Save();
-            }
+            }           
             /// <summary>
             /// Permite modificar varios elemento en lote al Contexto
             /// </summary>
@@ -1172,6 +1162,22 @@ namespace GenericRepository
                 {
                     Modificar<T>(ent);
                 }
+            }
+            /// <summary>
+            /// Validación que controla error: Un objeto con la misma clave ya existe en el ObjectStateManager. El ObjectStateManager puede realizar un seguimiento de múltiples objetos con la misma clave.
+            /// </summary>
+            /// <typeparam name="T">Type de la clase solicitada</typeparam>
+            /// <param name="entity">Instancia del objeto a chequar</param>
+            /// <returns>Intancia de DbEntityEntry validada </returns>
+            public DbEntityEntry<T> CheckIsAttached<T>(T entity) where T : class
+            {
+                var e = _context.Entry(entity);
+                if (e.State == EntityState.Detached)
+                {
+                    _context.Set<T>().Attach(entity);
+                    e = _context.Entry(entity);
+                }
+                return e;
             }
             /// <summary>
             /// Salva los cambios realizados en el Contexto
