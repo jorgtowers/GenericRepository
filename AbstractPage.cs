@@ -16,15 +16,15 @@ using System.Data;
 // Incorporar NameSpace del "GenericRepository.EF5" para usar la PageDynamic<TEntity>
 using GenericRepository.EF5;
 // Incorporar Namespace del "Proyecto.Model" para usar el contexto creado por ENTITY
-using EstadisticasDeportivas.Model;
+using NAMESPACEPROYECT.Model;
 
-namespace Tickets.Model
+namespace NAMESPACEPROYECT.Model
 {
     
     public class AbstractPage:Page
     {
 
-        protected GenericRepository<EstadisticasDeportivasEntities> model = new GenericRepository<EstadisticasDeportivasEntities>(Global.context);
+        protected GenericRepository<NAME-OF-EMD_Entities> model = new GenericRepository<NAME-OF-EMD_Entities>(Global.context);
 
         private int _Id = -1;
         protected int Id {
