@@ -161,34 +161,24 @@ namespace GenericRepository
         protected override void OnInit(EventArgs e)
         {
             Type TDynamic = null;
-
             base.CheckParametrosUrlQueryString();
-
             if (string.IsNullOrEmpty(base.Clase))
                 TDynamic = typeof(T);
             else
                 TDynamic = Type.GetType(typeof(T).Namespace + "." + base.Clase);
-
-
             _Panel = this.Controls.OfType<Panel>().FirstOrDefault();
-
             if (_Panel == null)
             {
                 _Panel = new System.Web.UI.WebControls.Panel() { ID = "PN" };
                 MasterPage masterPage = this.Master;
                 HtmlForm form = this.Master.Controls.OfType<System.Web.UI.HtmlControls.HtmlForm>().FirstOrDefault();
                 ContentPlaceHolder cph = form.Controls.OfType<ContentPlaceHolder>().FirstOrDefault();
-
                 cph.Controls.Add(_Panel);
-
             }
-
             base.OnInit(e);
 
             PropertyInfo[] propiedades = TDynamic.GetProperties();
-
             #region Mantenimiento
-
             _Panel.Controls.Add(new LiteralControl("<p onclick=app.Utils.Toogle('editPanel')><b class='fa fa-edit'></b>Presione clic o la tecla F9, para abrir panel de edición.</p><div id='editPanel' style='display: none'><span id='closeEditPanel' onclick=app.Utils.Toogle('editPanel')><b class='fa fa-times'></b></span>"));
             _Panel.Controls.Add(new LiteralControl("<table class='table'><tbody>"));
             foreach (PropertyInfo propiedad in propiedades)
@@ -202,37 +192,78 @@ namespace GenericRepository
                 else
                 {
                     tipo = propiedad.PropertyType.Name;
+                }                
+                if (TDynamic.Namespace == propiedad.PropertyType.Namespace)
+                {
+                    nombre = propiedad.PropertyType.Name;
+                    /* ------------------
+                     * propiedad.Name: Ofrece el "tipo" del Object, por se un DropDownList se le asigna un Int32 para poder manipular su Id
+                     *  _Fields.Add(new KeyValuePair<string, string>(propiedad.Name, tipo));
+                     --------------------*/
+                    _Fields.Add(new KeyValuePair<string, string>("ddl" + nombre + "-" + propiedad.Name.Replace(nombre, ""), "Int32"));
+                    _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'>" + propiedad.Name + "</td><td>"));
+                    Type clase = Type.GetType(propiedad.PropertyType.Namespace + "." + nombre);
+
+                    IDescripcionId obj = (IDescripcionId)Activator.CreateInstance(clase);
+                    obj.Descripcion = "( -- Seleccionar -- )";
+                    obj.Id = -1;
+
+                    DbSet setClase = null;
+                    if (clase != null)
+                    {
+                        setClase = model.model.Set(clase);
+                        setClase.Load();
+                    }
+                    DropDownList t = new DropDownList()
+                    {
+                        ID = "ddl" + nombre + "-" + propiedad.Name.Replace(nombre, ""),
+                        DataTextField = "Descripcion",
+                        DataValueField = "Id",
+                        CssClass="form-control"
+                    };
+
+                    IList<IDescripcionId> listado = setClase != null ? setClase.Local.Cast<IDescripcionId>().ToList() : null;
+                    listado.Add(obj);
+
+                    t.DataSource = listado.OrderBy(x => x.Id); 
+                    t.DataBind();
+
+                    _Panel.Controls.Add(t);
+                    _Panel.Controls.Add(new LiteralControl("</td></tr>"));
                 }
+
                 if (propiedad.PropertyType.Namespace == "System")
                 {
                     nombre = propiedad.Name;
                     if (tipo == "String" || tipo == "Int32" || tipo == "DateTime")
                     {
-                        _Fields.Add(new KeyValuePair<string, string>(nombre, tipo));
+                        _Fields.Add(new KeyValuePair<string, string>("txt"+nombre, tipo));
                         TextBox t = new TextBox() { ID = "txt" + nombre.Replace(" ", ""), CssClass = "form-control" };
                         if (nombre == "Id")
                         {
                             _Panel.Controls.Add(new LiteralControl("<tr class='help' style='display:none'><td  class='info'>" + nombre + "</td><td>"));
                             t.Enabled = false;
-                            t.Attributes.Add("optional", "si");
+                            _Panel.Controls.Add(t);
+                            _Panel.Controls.Add(new LiteralControl("</td></tr>"));
                         }
                         else
-                            _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'>" + nombre + "</td><td>"));
-                        //if (nombre == "Password")
-                        //{
-                        //    t.TextMode = TextBoxMode.Password;
-                        //}
-                        _Panel.Controls.Add(t);
-                        _Panel.Controls.Add(new LiteralControl("</td></tr>"));
+                            if (!nombre.Contains("Id"))
+                            {
+                                _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'>" + nombre + "</td><td>"));
+                                _Panel.Controls.Add(t);
+                                _Panel.Controls.Add(new LiteralControl("</td></tr>"));
+                            }                        
                     }
                     if (tipo == "Boolean")
                     {
-                        _Fields.Add(new KeyValuePair<string, string>(nombre, tipo));
+                        _Fields.Add(new KeyValuePair<string, string>("chk"+nombre, tipo));
                         _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'>" + nombre + "</td><td>"));
-                        CheckBox t = new CheckBox() { ID = "chk" + nombre.Replace(" ", "") };
+                        CheckBox t = new CheckBox() {  ID = "chk" +nombre.Replace(" ", "") };
                         _Panel.Controls.Add(t);
                         _Panel.Controls.Add(new LiteralControl("</td></tr>"));
                     }
+
+
 
                 }
                 //if (TDynamic.Namespace == propiedad.PropertyType.Namespace)
@@ -284,7 +315,16 @@ namespace GenericRepository
             _Panel.Controls.Add(new LiteralControl("<table class='table table-condensed table-striped'><thead><tr>"));
             foreach (KeyValuePair<string, string> headers in _Fields)
             {
-                _Panel.Controls.Add(new LiteralControl("<td>" + headers.Key + "</td>"));
+                string key = headers.Key.Replace("txt","").Replace("ddl","").Replace("chk","");
+                if (key == "Id")
+                    _Panel.Controls.Add(new LiteralControl("<td>" + key + "</td>"));
+                if (!key.Contains("Id"))
+                {
+                    if (key.Substring(key.IndexOf("-") + 1).Length > 0)
+                        _Panel.Controls.Add(new LiteralControl("<td>" + key.Replace("-", "") + "</td>"));
+                    else
+                        _Panel.Controls.Add(new LiteralControl("<td>" + key.Substring(0, key.IndexOf("-")) + "</td>"));
+                }
             }
             _Panel.Controls.Add(new LiteralControl("</tr></thead>"));
             _Panel.Controls.Add(new LiteralControl("<tbody id='toPaginador'>"));
@@ -295,18 +335,48 @@ namespace GenericRepository
                 _Panel.Controls.Add(new LiteralControl("<tr>"));
                 foreach (KeyValuePair<string, string> campo in _Fields)
                 {
+                    object resultado=null; 
+                    string key = campo.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "");
+                    bool isDDL = campo.Key.Substring(0, 3) == "ddl";
 
-                    Type tipoDePropiedad = Type.GetType("System." + campo.Value);
-                    PropertyInfo propiedad = item.GetType().GetProperty(campo.Key);
-                    object resultado = propiedad.GetValue(item, null);
-                    if (campo.Key == "Id")
-                        _Panel.Controls.Add(new LiteralControl("<td><a href='?Id=" + (resultado != null ? resultado.ToString() : "") + "'><b class='fa fa-edit'></b></a></td>"));
+                    if (!isDDL)
+                    {
+                        Type tipoDePropiedad = Type.GetType("System." + campo.Value);
+                        PropertyInfo propiedad = item.GetType().GetProperty(key);
+                        resultado = propiedad.GetValue(item, null).ToString();
+                    }
+                    else {
+                        object id = 0;
+
+                        Type tipoDePropiedad = Type.GetType("System." + campo.Value);
+
+                        PropertyInfo propiedad = null;
+                        if (key.Substring(key.IndexOf("-")+1).Length > 0)
+                            propiedad = item.GetType().GetProperty("Id" + key.Replace("-", ""));
+                        else
+                            propiedad = item.GetType().GetProperty("Id" + key.Substring(0, key.IndexOf("-")));
+                        id = propiedad.GetValue(item, null);
+
+                        Type clase = Type.GetType(item.GetType().BaseType.Namespace + "." + key.Substring(0,key.IndexOf("-")));
+                        DbSet setClase = null;
+                        if (clase != null)
+                        {
+                            setClase = model.model.Set(clase);
+                            object instancia = setClase.Find(id);
+                            resultado = instancia.GetType().GetProperty("Descripcion").GetValue(instancia, null);
+                        }                        
+                    }
+                    if (key == "Id")
+                        _Panel.Controls.Add(new LiteralControl("<td><a href='?Id=" + (resultado != null ? resultado.ToString(): "") + "'><b class='fa fa-edit'></b></a></td>"));
                     else
                     {
-                        if (campo.Value != "Boolean")
-                            _Panel.Controls.Add(new LiteralControl("<td>" + (resultado != null ? resultado.ToString() : "") + "</td>"));
-                        else
-                            _Panel.Controls.Add(new LiteralControl("<td><input type='checkbox' " + (resultado != null ? (resultado.ToString()=="True"?"checked":"") : "") + "/></td>"));
+                        if (!key.Contains("Id"))
+                        {
+                            if (campo.Value != "Boolean")
+                                _Panel.Controls.Add(new LiteralControl("<td>" + (resultado != null ? resultado.ToString() : "") + "</td>"));
+                            else
+                                _Panel.Controls.Add(new LiteralControl("<td><input type='checkbox' " + (resultado != null ? (resultado.ToString() == "True" ? "checked" : "") : "") + "/></td>"));
+                        }
                     }
 
                 } _Panel.Controls.Add(new LiteralControl("</tr>"));
@@ -327,23 +397,50 @@ namespace GenericRepository
                 _ = model.Obtener<T>(base.Id);
             else
                 _ = new T();
+            List<DropDownList> ddls = _Panel.Controls.OfType<DropDownList>().ToList();
+            foreach (DropDownList ddl in ddls)
+            {
+                if (ddl.Enabled)
+                {
+                    KeyValuePair<string, string> par = Fields.Where(x => x.Key.Replace("-", "") == ddl.ID.Replace("-", "")).FirstOrDefault();                    
+                    int valor=0;
+                    int.TryParse(ddl.SelectedValue, out valor);
+                    string key = par.Key;
+                    Type.GetType("System.Int32");
+                    if (key.Substring(key.IndexOf("-") + 1).Length > 0)
+                        key = par.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "").Replace("-", "");
+                    else
+                    {
+                        key = par.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "");
+                        key = key.Substring(0, key.IndexOf("-"));
+                    }
+                    _.GetType().GetProperty("Id" + key).SetValue(_, Convert.ChangeType(valor, Type.GetType("System." + par.Value)), null);
+
+
+                    //_.GetType().GetProperty("Id"+par.Key).SetValue(_, Convert.ChangeType(ddl.Text, Type.GetType("System." + par.Value)), null);
+                }
+            }
             List<TextBox> txts = _Panel.Controls.OfType<TextBox>().ToList();
             foreach (TextBox txt in txts)
             {
                 if (txt.Enabled)
                 {
-                    KeyValuePair<string, string> par = Fields.Where(x => x.Key == txt.ID.Replace("txt", "")).FirstOrDefault();
+                    KeyValuePair<string, string> par = Fields.Where(x => x.Key == txt.ID).FirstOrDefault();
+                    string key = par.Key;
+                    key = par.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "");
                     Type.GetType("System." + par.Value);
-                    _.GetType().GetProperty(par.Key).SetValue(_, Convert.ChangeType(txt.Text, Type.GetType("System." + par.Value)), null);
+                    _.GetType().GetProperty(key).SetValue(_, Convert.ChangeType(txt.Text, Type.GetType("System." + par.Value)), null);
                 }
             }
             List<CheckBox> chks = _Panel.Controls.OfType<CheckBox>().ToList();
             foreach (CheckBox chk in chks)
             {
 
-                KeyValuePair<string, string> par = Fields.Where(x => x.Key == chk.ID.Replace("chk", "")).FirstOrDefault();
-                    Type.GetType("System." + par.Value);
-                    _.GetType().GetProperty(par.Key).SetValue(_, chk.Checked, null);               
+                KeyValuePair<string, string> par = Fields.Where(x => x.Key == chk.ID).FirstOrDefault();
+                string key = par.Key;
+                key = par.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "");
+                Type.GetType("System." + par.Value);
+                _.GetType().GetProperty(key).SetValue(_, chk.Checked, null);
             }
             return _;
         }
@@ -356,7 +453,6 @@ namespace GenericRepository
             get { return _Resultado; }
             set { _Resultado = value; }
         }
-
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
@@ -377,21 +473,56 @@ namespace GenericRepository
         {
             try
             {
-                foreach (KeyValuePair<string, string> campo in Fields)
+
+                List<DropDownList> ddls = _Panel.Controls.OfType<DropDownList>().ToList();
+                foreach (DropDownList ddl in ddls)
                 {
-                    foreach (Control control in _Panel.Controls)
+                    if (ddl.Enabled)
                     {
-                        if (control.ID == "txt" + campo.Key)
+                        KeyValuePair<string, string> par = Fields.Where(x => x.Key.Replace("-", "") == ddl.ID.Replace("-", "")).FirstOrDefault();
+                        object result=null;
+                        string key = par.Key;
+                        Type.GetType("System.Int32");
+                        if (key.Substring(key.IndexOf("-") + 1).Length > 0)
                         {
-                            object result = item.GetType().GetProperty(campo.Key).GetValue(item, null);
-                            ((TextBox)control).Text = (result != null ? result : "").ToString();
+                            key = par.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "");
+                            result = item.GetType().GetProperty("Id" + key.Replace("-", "")).GetValue(item, null);
                         }
-                        if (control.ID == "chk" + campo.Key)
+                        else
                         {
-                            object result = item.GetType().GetProperty(campo.Key).GetValue(item, null);
-                            ((CheckBox)control).Checked = (Boolean)result;
+                            key = par.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "");
+                            result = item.GetType().GetProperty("Id" + key.Substring(0, key.IndexOf("-"))).GetValue(item, null);
+                        }
+                        
+                        if (ddl.Items.Count > 0)
+                        {
+                            ListItem seleccionar = ddl.Items.FindByValue(result.ToString());
+                            if (seleccionar != null)
+                                seleccionar.Selected = true;
                         }
                     }
+                }
+                List<TextBox> txts = _Panel.Controls.OfType<TextBox>().ToList();
+                foreach (TextBox txt in txts)
+                {
+                    if (txt.Enabled)
+                    {                        
+                        KeyValuePair<string, string> par = Fields.Where(x => x.Key == txt.ID).FirstOrDefault();
+                        string key = par.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "");
+                        Type.GetType("System." + par.Value);
+                        object result = item.GetType().GetProperty(key).GetValue(item, null);
+                        txt.Text = result.ToString();
+                    }
+                }
+                List<CheckBox> chks = _Panel.Controls.OfType<CheckBox>().ToList();
+                foreach (CheckBox chk in chks)
+                {
+
+                    KeyValuePair<string, string> par = Fields.Where(x => x.Key == chk.ID).FirstOrDefault();
+                    string key = par.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "");
+                    Type.GetType("System." + par.Value);
+                    object result = item.GetType().GetProperty(key).GetValue(item, null);
+                    chk.Checked = result.ToString() == "true" ? true : false;
                 }
             }
             catch (Exception ex)
@@ -967,11 +1098,21 @@ namespace GenericRepository
         }
     }
     namespace EF5
-    {    /// <summary>
+    {   
+        /// <summary>
         /// Interfaz que asegura la existencia del campo Id
         /// </summary>
+        [Obsolete("Usar IDescripcionId, si usará PageDynamic<T>, ya que los campos de DropDonwList requieren de un valor ID y DESCRIPCION")]
         public interface IId
         {
+            int Id { get; set; }
+        }
+        /// <summary>
+        /// Interfaz que asegura la existencia del campo Id y Descripcion
+        /// </summary
+        public interface IDescripcionId
+        {
+            string Descripcion { get; set; }
             int Id { get; set; }
         }
         /// <summary>
