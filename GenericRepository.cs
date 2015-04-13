@@ -26,7 +26,6 @@ using System.Data.Entity.Core.Objects;
 using System.Data.Entity.Core.Objects.DataClasses;
 using System.Web.UI.HtmlControls;
 
-
 namespace GenericRepository
 {
     public class PageGeneric<T> : AbstractPage where T : class,new()
@@ -115,7 +114,7 @@ namespace GenericRepository
     /// Clase especializada para la generación de páginas web apartir del nombre de una instancia, usando reflextion
     /// </summary>
     /// <typeparam name="T">Instancia de Type a usar</typeparam>
-    public class PageDynamic<T> : AbstractPage where T : class,IId, new()
+    public class PageDynamic<T> : AbstractPage where T : class, new()
     {
         private Panel _Panel = null;
         /// <summary>
