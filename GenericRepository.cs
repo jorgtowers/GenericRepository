@@ -1,10 +1,8 @@
 /*!
  * ABOUT.......: Clase generica que permite conectarse a un EDM, en varías versiones de EF4, EF4SupportEF5 y EF5
  * CREADOR.....: Jorge L. Torres A.
- * ACTUALIACION: Se agrega metodo: public DbEntityEntry<T> CheckIsAttached<T>(T entity) where T : class, 
- *               permite validar contra error "Un objeto con la misma clave ya existe en el ObjectStateManager. El ObjectStateManager puede realizar un seguimiento de múltiples objetos con la misma clave."
- *               aplicado a Modiciar<T> y Eliminar<T>
- * ACTUALIZADO.: 10-04-2015 02:48AM
+ * ACTUALIACION: Se agrega opción a PageDynamic<T> para que pueda agregar los DropDownList de sus tablas asociadas.
+ * ACTUALIZADO.: 13-04-2015 06:55PM
  * CREADO......: 20-03-2015 11:53PM
  */
 using System;
