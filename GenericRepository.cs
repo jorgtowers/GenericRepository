@@ -357,7 +357,7 @@ namespace GenericRepository
                     {
                         Type tipoDePropiedad = Type.GetType("System." + campo.Value);
                         PropertyInfo propiedad = item.GetType().GetProperty(key);
-                        resultado = propiedad.GetValue(item, null).ToString();
+                        resultado = propiedad.GetValue(item, null) != null ? propiedad.GetValue(item, null).ToString() : "";
                     }
                     else {
                         object id = 0;
