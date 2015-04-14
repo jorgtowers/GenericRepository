@@ -191,6 +191,7 @@ namespace GenericRepository
             base.OnInit(e);
 
             PropertyInfo[] propiedades = TDynamic.GetProperties();
+            
             #region Mantenimiento
             _Panel.Controls.Add(new LiteralControl("<p onclick=app.Utils.Toogle('editPanel')><b class='fa fa-edit'></b>Presione clic o la tecla F9, para abrir panel de edición.</p><div id='editPanel' style='display: none'><span id='closeEditPanel' onclick=app.Utils.Toogle('editPanel')><b class='fa fa-times'></b></span>"));
             _Panel.Controls.Add(new LiteralControl("<table class='table'><tbody>"));
@@ -214,7 +215,7 @@ namespace GenericRepository
                      *  _Fields.Add(new KeyValuePair<string, string>(propiedad.Name, tipo));
                      --------------------*/
                     _Fields.Add(new KeyValuePair<string, string>("ddl" + nombre + "-" + propiedad.Name.Replace(nombre, ""), "Int32"));
-                    _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'><b>" + propiedad.Name + "</b><p>" + propiedad.Name + "</p></td><td>"));
+                    _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'><b>" + propiedad.Name + "</b><p></p></td><td>"));
                     Type clase = Type.GetType(propiedad.PropertyType.Namespace + "." + nombre);
 
                     IDescripcionId obj = (IDescripcionId)Activator.CreateInstance(clase);
@@ -254,7 +255,7 @@ namespace GenericRepository
                         TextBox t = new TextBox() { ID = "txt" + nombre.Replace(" ", ""), CssClass = "form-control" };
                         if (nombre == "Id")
                         {
-                            _Panel.Controls.Add(new LiteralControl("<tr class='help' style='display:none'><td  class='info'>" + nombre + "</td><td>"));
+                            _Panel.Controls.Add(new LiteralControl("<tr class='help' style='display:none'><td  class='info'><b>" + nombre + "</b><p></p></td><td>"));
                             t.Enabled = false;
                             _Panel.Controls.Add(t);
                             _Panel.Controls.Add(new LiteralControl("</td></tr>"));
@@ -262,7 +263,7 @@ namespace GenericRepository
                         else
                             if (!nombre.Contains("Id"))
                             {
-                                _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'>" + nombre + "</td><td>"));
+                                _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'><b>" + nombre + "</b><p></p></td><td>"));
                                 _Panel.Controls.Add(t);
                                 _Panel.Controls.Add(new LiteralControl("</td></tr>"));
                             }                        
@@ -270,7 +271,7 @@ namespace GenericRepository
                     if (tipo == "Boolean")
                     {
                         _Fields.Add(new KeyValuePair<string, string>("chk"+nombre, tipo));
-                        _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'>" + nombre + "</td><td>"));
+                        _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'><b>" + nombre + "</b><p></p></td><td>"));
                         CheckBox t = new CheckBox() {  ID = "chk" +nombre.Replace(" ", "") };
                         _Panel.Controls.Add(t);
                         _Panel.Controls.Add(new LiteralControl("</td></tr>"));
