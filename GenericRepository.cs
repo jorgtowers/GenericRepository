@@ -2,7 +2,7 @@
  * ABOUT.......: Clase generica que permite conectarse a un EDM, en varías versiones de EF4, EF4SupportEF5 y EF5
  * CREADOR.....: Jorge L. Torres A.
  * ACTUALIACION: Se corrige metodo FillCampos  "chk.Checked = (bool)result;"
- * ACTUALIZADO.: 14-04-2015 01:51PM
+ * ACTUALIZADO.: 14-04-2015 02:43PM
  * CREADO......: 20-03-2015 11:53PM
  */
 using System;
@@ -214,7 +214,7 @@ namespace GenericRepository
                      *  _Fields.Add(new KeyValuePair<string, string>(propiedad.Name, tipo));
                      --------------------*/
                     _Fields.Add(new KeyValuePair<string, string>("ddl" + nombre + "-" + propiedad.Name.Replace(nombre, ""), "Int32"));
-                    _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'>" + propiedad.Name + "</td><td>"));
+                    _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'><b>" + propiedad.Name + "</b><p>" + propiedad.Name + "</p></td><td>"));
                     Type clase = Type.GetType(propiedad.PropertyType.Namespace + "." + nombre);
 
                     IDescripcionId obj = (IDescripcionId)Activator.CreateInstance(clase);
