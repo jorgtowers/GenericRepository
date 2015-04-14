@@ -173,6 +173,21 @@ namespace GenericRepository
                 ContentPlaceHolder cph = form.Controls.OfType<ContentPlaceHolder>().FirstOrDefault();
                 cph.Controls.Add(_Panel);
             }
+            string title = "Maestro de ";
+            string end=TDynamic.Name.Substring(TDynamic.Name.Length - 1).ToLower();
+            switch (end)
+            {
+                case "s":
+                    title += TDynamic.Name ;
+                    break;
+                case "n":
+                    title += TDynamic.Name + "es";
+                    break;
+                default:
+                    title += TDynamic.Name +"s";
+                    break;
+            }
+            this.Page.Title = title;
             base.OnInit(e);
 
             PropertyInfo[] propiedades = TDynamic.GetProperties();
@@ -310,6 +325,7 @@ namespace GenericRepository
             #endregion
 
             #region Listado
+            _Panel.Controls.Add(new LiteralControl("<nav><h2>" + title + "</h2></nav>"));
             _Panel.Controls.Add(new LiteralControl("<table class='table table-condensed table-striped'><thead><tr>"));
             foreach (KeyValuePair<string, string> headers in _Fields)
             {
