@@ -365,13 +365,19 @@ namespace GenericRepository
                         Type tipoDePropiedad = Type.GetType("System." + campo.Value);
 
                         PropertyInfo propiedad = null;
-                        if (key.Substring(key.IndexOf("-")+1).Length > 0)
+                        if (key.Substring(key.IndexOf("-") + 1).Length > 0)
+                        {
                             propiedad = item.GetType().GetProperty("Id" + key.Replace("-", ""));
+                            key = key.Substring(0, key.IndexOf("-"));                            
+                        }
                         else
+                        {
                             propiedad = item.GetType().GetProperty("Id" + key.Substring(0, key.IndexOf("-")));
+                            key = key.Replace("-", "");
+                        }
                         id = propiedad.GetValue(item, null);
 
-                        Type clase = Type.GetType(item.GetType().BaseType.Namespace + "." + key.Substring(0,key.IndexOf("-")));
+                        Type clase = Type.GetType(item.GetType().Namespace + "." + key);
                         DbSet setClase = null;
                         if (clase != null)
                         {
