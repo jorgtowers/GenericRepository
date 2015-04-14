@@ -536,7 +536,7 @@ namespace GenericRepository
                     string key = par.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "");
                     Type.GetType("System." + par.Value);
                     object result = item.GetType().GetProperty(key).GetValue(item, null);
-                    chk.Checked = result.ToString() == "true" ? true : false;
+                    chk.Checked = (bool)result;
                 }
             }
             catch (Exception ex)
