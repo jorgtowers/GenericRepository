@@ -1,8 +1,8 @@
 /*!
  * ABOUT.......: Clase generica que permite conectarse a un EDM, en varías versiones de EF4, EF4SupportEF5 y EF5
  * CREADOR.....: Jorge L. Torres A.
- * ACTUALIACION: Se agrega opción a PageDynamic<T> para que pueda agregar los DropDownList de sus tablas asociadas.
- * ACTUALIZADO.: 13-04-2015 06:55PM
+ * ACTUALIACION: Se corrige metodo FillCampos  "chk.Checked = (bool)result;"
+ * ACTUALIZADO.: 14-04-2015 01:51PM
  * CREADO......: 20-03-2015 11:53PM
  */
 using System;
