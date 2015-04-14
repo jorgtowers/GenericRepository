@@ -378,7 +378,7 @@ namespace GenericRepository
                         }
                         id = propiedad.GetValue(item, null);
 
-                        Type clase = Type.GetType(item.GetType().Namespace + "." + key);
+                        Type clase = Type.GetType(TDynamic.Namespace + "." + key);
                         DbSet setClase = null;
                         if (clase != null)
                         {
