@@ -1,7 +1,7 @@
 /*!
  * ABOUT.......: Clase generica que permite conectarse a un EDM, en varías versiones de EF4, EF4SupportEF5 y EF5
  * CREADOR.....: Jorge L. Torres A.
- * ACTUALIACION: Se corrige metodo FillCampos  "chk.Checked = (bool)result;"
+ * ACTUALIACION: Se corrige llenar campos Enabled=false;
  * ACTUALIZADO.: 15-04-2015 09:02AM
  * CREADO......: 20-03-2015 11:53PM
  */
@@ -181,6 +181,9 @@ namespace GenericRepository
                     title += TDynamic.Name ;
                     break;
                 case "n":
+                    title += TDynamic.Name + "es";
+                    break;
+                case "l":
                     title += TDynamic.Name + "es";
                     break;
                 default:
@@ -444,14 +447,11 @@ namespace GenericRepository
             List<TextBox> txts = _Panel.Controls.OfType<TextBox>().ToList();
             foreach (TextBox txt in txts)
             {
-                if (txt.Enabled)
-                {
                     KeyValuePair<string, string> par = Fields.Where(x => x.Key == txt.ID).FirstOrDefault();
                     string key = par.Key;
                     key = par.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "");
                     Type.GetType("System." + par.Value);
                     _.GetType().GetProperty(key).SetValue(_, Convert.ChangeType(txt.Text, Type.GetType("System." + par.Value)), null);
-                }
             }
             List<CheckBox> chks = _Panel.Controls.OfType<CheckBox>().ToList();
             foreach (CheckBox chk in chks)
@@ -526,14 +526,11 @@ namespace GenericRepository
                 List<TextBox> txts = _Panel.Controls.OfType<TextBox>().ToList();
                 foreach (TextBox txt in txts)
                 {
-                    if (txt.Enabled)
-                    {                        
                         KeyValuePair<string, string> par = Fields.Where(x => x.Key == txt.ID).FirstOrDefault();
                         string key = par.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "");
                         Type.GetType("System." + par.Value);
                         object result = item.GetType().GetProperty(key).GetValue(item, null);
                         txt.Text = result.ToString();
-                    }
                 }
                 List<CheckBox> chks = _Panel.Controls.OfType<CheckBox>().ToList();
                 foreach (CheckBox chk in chks)
