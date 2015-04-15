@@ -637,11 +637,6 @@ namespace GenericRepository
 
     public class Utils
     {
-        public interface IDescripcionId
-        {
-            string Descripcion { get; set; }
-            int Id { get; set; }
-        }
         public static void Llenar<T>(ListControl ctrl, List<T> datos, bool todos = false, bool seleccionar = false, bool orderByDescripcion = false) where T : IDescripcionId, new()
         {
             List<T> t = datos;
