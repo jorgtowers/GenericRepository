@@ -1,8 +1,8 @@
 /*!
  * ABOUT.......: Clase generica que permite conectarse a un EDM, en varías versiones de EF4, EF4SupportEF5 y EF5
  * CREADOR.....: Jorge L. Torres A.
- * ACTUALIACION: Se corrige llenar campos Enabled=false;
- * ACTUALIZADO.: 15-04-2015 04:04AM
+ * ACTUALIACION: Se agrega clase para información por Info:System.Attribute vía reflexion
+ * ACTUALIZADO.: 15-04-2015 01:45AM
  * CREADO......: 20-03-2015 11:53PM
  */
 using System;
@@ -26,6 +26,7 @@ using System.Web.UI.HtmlControls;
 
 namespace GenericRepository
 {
+    [Info(Descripcion = "Clase que implementa metodos genericos apartir del modelo de EDM")]
     public class PageGeneric<T> : AbstractPage where T : class,new()
     {
 
@@ -112,6 +113,7 @@ namespace GenericRepository
     /// Clase especializada para la generación de páginas web apartir del nombre de una instancia, usando reflextion
     /// </summary>
     /// <typeparam name="T">Instancia de Type a usar</typeparam>
+    [Info(Descripcion = "Clase especializada para la generación de páginas web apartir del nombre de una instancia, usando reflextion")]
     public class PageDynamic<T> : AbstractPage where T : class, new()
     {
         private Panel _Panel = null;
@@ -1165,20 +1167,22 @@ namespace GenericRepository
         public class Info : System.Attribute
         {
             public string Version;
-            public string Desarrollador;
+            public string Creador;
+            public string Colaborador;
             public string Descripcion;
             public string Creado;
             public Info()
             {
                 Creado = "20/03/2015";
                 Version = "1.0.0.0";
-                Desarrollador = "Jorge L. Torres A.";
+                Creador = "Jorge L. Torres A.";
             }
         }
         /// <summary>
         /// Clase generica que recibe un contexto y puede trabajar con cualer clase del model
         /// </summary>
         /// <typeparam name="TContext">Object del Contexto del modelo de entity EDM</typeparam>
+        [Info(Descripcion = "Clase generica que recibe un contexto y puede trabajar con cualer clase del model")]
         public class GenericRepository<TContext> where TContext : DbContext, new()
         {
             /// <summary>
