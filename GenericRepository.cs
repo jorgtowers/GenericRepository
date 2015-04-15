@@ -2,7 +2,7 @@
  * ABOUT.......: Clase generica que permite conectarse a un EDM, en varías versiones de EF4, EF4SupportEF5 y EF5
  * CREADOR.....: Jorge L. Torres A.
  * ACTUALIACION: Se corrige metodo FillCampos  "chk.Checked = (bool)result;"
- * ACTUALIZADO.: 14-04-2015 02:43PM
+ * ACTUALIZADO.: 15-04-2015 09:02AM
  * CREADO......: 20-03-2015 11:53PM
  */
 using System;
@@ -293,29 +293,29 @@ namespace GenericRepository
             _Panel.Controls.Add(lblEstatus);
             _Panel.Controls.Add(new LiteralControl("</td></tr>"));
 
-            _Panel.Controls.Add(new LiteralControl("<tr><td colspan='2'>"));
+            _Panel.Controls.Add(new LiteralControl("<tr><td colspan='2' style='text-align: right;'>"));
 
             Button btnAgregar = new Button() { ID = "btnAgregar", CssClass = "btn btn-primary", Text = "Agregar" };
             btnAgregar.Click += Agregar;
             btnAgregar.OnClientClick = "return app.Utils.ValidarCampos('editPanel',true)";
             if (base.Id > 0)
-                btnAgregar.Enabled = false;
+                btnAgregar.Visible = false;
             _Panel.Controls.Add(btnAgregar);
 
             Button btnModificar = new Button() { ID = "btnModificar", CssClass = "btn btn-default", Text = "Modificar" };
             btnModificar.Click += Modificar;
             btnModificar.OnClientClick = "return app.Utils.ValidarCampos('editPanel',true)";
             if (base.Id < 0)
-                btnModificar.Enabled = false;
+                btnModificar.Visible = false;
             _Panel.Controls.Add(btnModificar);
 
             Button btnEliminar = new Button() { ID = "btnEliminar", CssClass = "btn btn-default", Text = "Eliminar" };
             btnEliminar.Click += Eliminar;
             if (base.Id < 0)
-                btnEliminar.Enabled = false;
+                btnEliminar.Visible = false;
             _Panel.Controls.Add(btnEliminar);
 
-            Button btnLimpiar = new Button() { ID = "btnLimpiar", CssClass = "btn btn-default", Text = "Limpiar" };
+            Button btnLimpiar = new Button() { ID = "btnLimpiar", CssClass = "btn btn-default", Text = "Cancelar" };
             btnLimpiar.Click += Limpiar;
             _Panel.Controls.Add(btnLimpiar);
 
