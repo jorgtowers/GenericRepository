@@ -114,7 +114,7 @@ namespace GenericRepository
     /// </summary>
     /// <typeparam name="T">Instancia de Type a usar</typeparam>
     [Info(Descripcion = "Clase especializada para la generación de páginas web apartir del nombre de una instancia, usando reflextion")]
-    public class PageDynamic<T> : AbstractPage where T : class, new()
+    public abstract class PageDynamic<T> : AbstractPage where T : class, new()
     {
         /// <summary>
         /// Enumerativo que determinar la presentación usarán los datos de tipo Boolean
@@ -844,7 +844,7 @@ namespace GenericRepository
         }
     }
 
-    public class Utils
+    public partial class Utils
     {
         public static void Llenar<T>(ListControl ctrl, List<T> datos, bool todos = false, bool seleccionar = false, bool orderByDescripcion = false) where T : IDescripcionId, new()
         {
@@ -1359,7 +1359,7 @@ namespace GenericRepository
         /// </summary>
         /// <typeparam name="TContext">Object del Contexto del modelo de entity EDM</typeparam>
         [Info(Descripcion = "Clase generica que recibe un contexto y puede trabajar con cualer clase del model")]
-        public class GenericRepository<TContext> where TContext : DbContext, new()
+        public partial class GenericRepository<TContext> where TContext : DbContext, new()
         {
             /// <summary>
             /// Crea una nueva instancia del Contexto
