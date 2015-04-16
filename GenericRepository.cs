@@ -1,8 +1,8 @@
 /*!
  * ABOUT.......: Clase generica que permite conectarse a un EDM, en varías versiones de EF4, EF4SupportEF5 y EF5
  * CREADOR.....: Jorge L. Torres A.
- * ACTUALIACION: Se agrega clase para información por Info:System.Attribute vía reflexion
- * ACTUALIZADO.: 15-04-2015 01:45AM
+ * ACTUALIACION: Se incluye opción de mostrar Booleanos como RadioButton o CheckBox, y se agregan propiedades para controlar el nombre de los botones del CRUD
+ * ACTUALIZADO.: 16-04-2015 09:27AM
  * CREADO......: 20-03-2015 11:53PM
  */
 using System;
@@ -129,7 +129,42 @@ namespace GenericRepository
             get { return _BooleanAs; }
             set { _BooleanAs = value; }
         }
-
+        private string _NombreBotonAgregar = "Agregar";
+        /// <summary>
+        /// Nombre que tendrá el boton de btnAgregar, su valor por defecto es "Agregar"
+        /// </summary>
+        public string NombreBotonAgregar
+        {
+            get { return _NombreBotonAgregar; }
+            set { _NombreBotonAgregar = value; }
+        }
+        private string _NombreBotonModificar = "Modificar";
+        /// <summary>
+        /// Nombre que tendrá el boton de btnModificar, su valor por defecto es "Modificar"
+        /// </summary>
+        public string NombreBotonModificar
+        {
+            get { return _NombreBotonModificar; }
+            set { _NombreBotonModificar = value; }
+        }
+        private string _NombreBotonEliminar = "Eliminar";
+        /// <summary>
+        /// Nombre que tendrá el boton de btnEliminar, su valor por defecto es "Eliminar"
+        /// </summary>
+        public string NombreBotonEliminar
+        {
+            get { return _NombreBotonEliminar; }
+            set { _NombreBotonEliminar = value; }
+        }
+        private string _NombreBotonLimpiar = "Cancelar";
+        /// <summary>
+        /// Nombre que tendrá el boton de btnLimpiar, su valor por defecto es "Cancelar"
+        /// </summary>
+        public string NombreBotonLimpiar
+        {
+            get { return _NombreBotonLimpiar; }
+            set { _NombreBotonLimpiar = value; }
+        }
         private Panel _Panel = null;
         /// <summary>
         /// Instancia del Panel que será usado para crear todos los elementos de la instancia del objeto recibido
@@ -369,27 +404,30 @@ namespace GenericRepository
             /* ----------------
              * Agregando botones de acciones a la página
              * ----------------*/
-            Button btnAgregar = new Button() { ID = "btnAgregar", CssClass = "btn btn-primary", Text = "Agregar" };
+            
+
+            Button btnAgregar = new Button() { ID = "btnAgregar", CssClass = "btn btn-success", Text = _NombreBotonAgregar };
             btnAgregar.Click += Agregar;
             btnAgregar.OnClientClick = "return app.Utils.ValidarCampos('editPanel',true)";
             if (base.Id > 0)
                 btnAgregar.Visible = false;
             _Panel.Controls.Add(btnAgregar);
 
-            Button btnModificar = new Button() { ID = "btnModificar", CssClass = "btn btn-default", Text = "Modificar" };
-            btnModificar.Click += Modificar;
-            btnModificar.OnClientClick = "return app.Utils.ValidarCampos('editPanel',true)";
-            if (base.Id < 0)
-                btnModificar.Visible = false;
-            _Panel.Controls.Add(btnModificar);
-
-            Button btnEliminar = new Button() { ID = "btnEliminar", CssClass = "btn btn-default", Text = "Eliminar" };
+            Button btnEliminar = new Button() { ID = "btnEliminar", CssClass = "btn btn-danger", Text = _NombreBotonEliminar };
+            btnEliminar.Attributes.Add("style", "position: absolute;  left: 2em;");
             btnEliminar.Click += Eliminar;
             if (base.Id < 0)
                 btnEliminar.Visible = false;
             _Panel.Controls.Add(btnEliminar);
 
-            Button btnLimpiar = new Button() { ID = "btnLimpiar", CssClass = "btn btn-default", Text = "Cancelar" };
+            Button btnModificar = new Button() { ID = "btnModificar", CssClass = "btn btn-primary", Text = _NombreBotonModificar };
+            btnModificar.Click += Modificar;
+            btnModificar.OnClientClick = "return app.Utils.ValidarCampos('editPanel',true)";
+            if (base.Id < 0)
+                btnModificar.Visible = false;
+            _Panel.Controls.Add(btnModificar);            
+
+            Button btnLimpiar = new Button() { ID = "btnLimpiar", CssClass = "btn btn-default", Text = _NombreBotonLimpiar};
             btnLimpiar.Click += Limpiar;
             _Panel.Controls.Add(btnLimpiar);
 
@@ -478,7 +516,20 @@ namespace GenericRepository
                             if (campo.Value != "Boolean")
                                 _Panel.Controls.Add(new LiteralControl("<td>" + (resultado != null ? resultado.ToString() : "") + "</td>"));
                             else
-                                _Panel.Controls.Add(new LiteralControl("<td><input type='checkbox' " + (resultado != null ? (resultado.ToString() == "True" ? "checked" : "") : "") + "/></td>"));
+                            {
+                                switch (_BooleanAs)
+                                {
+                                    case eBooleanAs.RadioButton:
+                                        _Panel.Controls.Add(new LiteralControl("<td>" + (resultado != null ? (resultado.ToString() == "True" ? "Si" : "No") : "") + "</td>"));
+                                        break;
+                                    case eBooleanAs.CheckBox:
+                                        _Panel.Controls.Add(new LiteralControl("<td><input type='checkbox' " + (resultado != null ? (resultado.ToString() == "True" ? "checked" : "") : "") + "/></td>"));
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                
+                            }
                         }
                     }
 
@@ -772,9 +823,17 @@ namespace GenericRepository
                     check.Selected = false;
                 }
             }
+            foreach (RadioButton rbt in _Panel.Controls.OfType<RadioButton>())
+            {                
+                    ((RadioButton)rbt).Checked = false;                
+            }
+            foreach (CheckBox chk in _Panel.Controls.OfType<CheckBox>())
+            {
+                ((CheckBox)chk).Checked = false;                
+            }
             RefreshListado();
             Button btn = ((Button)sender);
-            if (btn.Text == "Limpiar" || btn.Text == "Eliminar")
+            if (btn.Text == _NombreBotonLimpiar || btn.Text == _NombreBotonEliminar)
             {
                 Response.Redirect(Request.Url.LocalPath, false);
             }
