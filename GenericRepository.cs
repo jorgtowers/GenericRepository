@@ -445,7 +445,7 @@ namespace GenericRepository
              * ----------------*/
             foreach (KeyValuePair<string, string> headers in _Fields)
             {
-                string key = headers.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "");
+                string key = headers.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "").Replace("rbt", "");
                 if (key == "Id")
                     _Panel.Controls.Add(new LiteralControl("<td>" + key + "</td>"));
                 if (!key.Contains("Id"))
