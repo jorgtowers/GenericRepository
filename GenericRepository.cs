@@ -116,6 +116,20 @@ namespace GenericRepository
     [Info(Descripcion = "Clase especializada para la generación de páginas web apartir del nombre de una instancia, usando reflextion")]
     public class PageDynamic<T> : AbstractPage where T : class, new()
     {
+        /// <summary>
+        /// Enumerativo que determinar la presentación usarán los datos de tipo Boolean
+        /// </summary>
+        public enum eBooleanAs { RadioButton, CheckBox }
+        private eBooleanAs _BooleanAs = eBooleanAs.CheckBox;
+        /// <summary>
+        /// Permite controlar la presentación que usarán los datos de tipo Boolean, por defecto se usará eBooleanAs.CheckBox
+        /// </summary>
+        public eBooleanAs BooleanAs
+        {
+            get { return _BooleanAs; }
+            set { _BooleanAs = value; }
+        }
+
         private Panel _Panel = null;
         /// <summary>
         /// Instancia del Panel que será usado para crear todos los elementos de la instancia del objeto recibido
@@ -125,6 +139,7 @@ namespace GenericRepository
             get { return _Panel; }
             set { _Panel = value; }
         }
+
         List<KeyValuePair<string, string>> _Fields = new List<KeyValuePair<string, string>>();
         /// <summary>
         /// Listado de campos y tipo de valor para a creación de los elementos y validar sus tipos de datos
@@ -175,9 +190,10 @@ namespace GenericRepository
                 ContentPlaceHolder cph = form.Controls.OfType<ContentPlaceHolder>().FirstOrDefault();
                 cph.Controls.Add(_Panel);
             }
-               /* ----------------
-                * Agregando título a la pagina
-                * ----------------*/
+            #region Definición del título de la página a partir de la entidad 
+            /* ----------------
+             * Agregando título a la pagina
+             * ----------------*/
             string title = "Maestro de ";
             string end = TDynamic.Name.Substring(TDynamic.Name.Length - 1).ToLower();
             switch (end)
@@ -196,14 +212,17 @@ namespace GenericRepository
                     break;
             }
             this.Page.Title = title;
+            #endregion
             
             base.OnInit(e);
 
             PropertyInfo[] propiedades = TDynamic.GetProperties();
 
-            #region Mantenimiento
+            #region Region del Mantenimiento para hacer CRUD de los registros
             _Panel.Controls.Add(new LiteralControl("<p onclick=app.Utils.Toogle('editPanel')><b class='fa fa-edit'></b>Presione clic o la tecla F9, para abrir panel de edición.</p><div id='editPanel' style='display: none'><span id='closeEditPanel' onclick=app.Utils.Toogle('editPanel')><b class='fa fa-times'></b></span>"));
             _Panel.Controls.Add(new LiteralControl("<table class='table'><tbody>"));
+            #region Campos para Agregar y/o Editar la información de los registros seleccionados o por crear
+            
             foreach (PropertyInfo propiedad in propiedades)
             {
                 string tipo = "";
@@ -256,7 +275,7 @@ namespace GenericRepository
 
                 if (propiedad.PropertyType.Namespace == "System")
                 {
-                    nombre = propiedad.Name;                    
+                    nombre = propiedad.Name;
                     /* ----------------
                      * Leyendo la Descripcion de la clase Info:System.Attribute
                      * ----------------*/
@@ -274,8 +293,8 @@ namespace GenericRepository
                         labelDescripcion = ((Info)System.Attribute.GetCustomAttributes(propiedad)[0]).Descripcion;
                     }
                     catch { }
-                    
-                    
+
+
 
 
                     if (tipo == "String" || tipo == "Int32" || tipo == "DateTime")
@@ -299,11 +318,34 @@ namespace GenericRepository
                     }
                     if (tipo == "Boolean")
                     {
-                        _Fields.Add(new KeyValuePair<string, string>("chk" + nombre, tipo));
-                        _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'><b>" + nombre + "</b><p>" + labelDescripcion + "</p></td><td>"));
-                        CheckBox t = new CheckBox() { ID = "chk" + nombre.Replace(" ", "") };
-                        _Panel.Controls.Add(t);
-                        _Panel.Controls.Add(new LiteralControl("</td></tr>"));
+                        /* ----------------
+                         * Evalua enumerativo "eBooleanAs" para determinar que presentación usarán los datos de tipo Boolean, por defecto se usará eBooleanAs.CheckBox
+                         * ----------------*/
+                        switch (_BooleanAs)
+                        {
+                            case eBooleanAs.RadioButton:
+                                {
+                                    _Fields.Add(new KeyValuePair<string, string>("rbt" + nombre, tipo));
+                                    _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'><b>" + nombre + "</b><p>" + labelDescripcion + "</p></td><td>"));
+                                    RadioButton t = new RadioButton() { GroupName = "rbt" + nombre.Replace(" ", ""), Text = "Si" };
+                                    _Panel.Controls.Add(t);
+                                    t = new RadioButton() { GroupName = "rbt" + nombre.Replace(" ", ""), Text = "No" };
+                                    _Panel.Controls.Add(t);
+                                    _Panel.Controls.Add(new LiteralControl("</td></tr>"));
+                                    break;
+                                }
+                            case eBooleanAs.CheckBox:
+                                {
+                                    _Fields.Add(new KeyValuePair<string, string>("chk" + nombre, tipo));
+                                    _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'><b>" + nombre + "</b><p>" + labelDescripcion + "</p></td><td>"));
+                                    CheckBox t = new CheckBox() { ID = "chk" + nombre.Replace(" ", "") };
+                                    _Panel.Controls.Add(t);
+                                    _Panel.Controls.Add(new LiteralControl("</td></tr>"));
+                                    break;
+                                }
+                            default:
+                                break;
+                        }
                     }
 
 
@@ -316,16 +358,17 @@ namespace GenericRepository
 
                 //sb.AppendLine("<br>");
                 //Response.Write(sb.ToString());
+            #endregion
             }
             _Panel.Controls.Add(new LiteralControl("<tr><td colspan='2'>"));
             Label lblEstatus = new Label() { ID = "lblEstatus" };
             _Panel.Controls.Add(lblEstatus);
-            _Panel.Controls.Add(new LiteralControl("</td></tr>"));
-              /* ----------------
-               * Agregando botones de acciones a la página
-               * ----------------*/
+            _Panel.Controls.Add(new LiteralControl("</td></tr>"));            
             _Panel.Controls.Add(new LiteralControl("<tr><td colspan='2' style='text-align: right;'>"));
-
+            #region Botones de accion para Agregar, Modificar, Eliminar y/o Cancelar
+            /* ----------------
+             * Agregando botones de acciones a la página
+             * ----------------*/
             Button btnAgregar = new Button() { ID = "btnAgregar", CssClass = "btn btn-primary", Text = "Agregar" };
             btnAgregar.Click += Agregar;
             btnAgregar.OnClientClick = "return app.Utils.ValidarCampos('editPanel',true)";
@@ -350,17 +393,17 @@ namespace GenericRepository
             btnLimpiar.Click += Limpiar;
             _Panel.Controls.Add(btnLimpiar);
 
+            #endregion
             _Panel.Controls.Add(new LiteralControl("</td></tr>"));
-
             _Panel.Controls.Add(new LiteralControl("</tbody></table></div>"));
 
             #endregion
-
-            #region Listado
+            #region Region del Listado en tabla HTML, muestra todos los registros de la tabla
             _Panel.Controls.Add(new LiteralControl("<nav><h2>" + title + "</h2></nav>"));
             _Panel.Controls.Add(new LiteralControl("<table class='table table-condensed table-striped'><thead><tr>"));
+            #region ListadoHeader
             /* ----------------
-             * Agregando listado en una tabla de HTML
+             * Agregando encabezados de listado en una tabla de HTML
              * ----------------*/
             foreach (KeyValuePair<string, string> headers in _Fields)
             {
@@ -375,9 +418,13 @@ namespace GenericRepository
                         _Panel.Controls.Add(new LiteralControl("<td>" + key.Substring(0, key.IndexOf("-")) + "</td>"));
                 }
             }
+            #endregion            
             _Panel.Controls.Add(new LiteralControl("</tr></thead>"));
-            _Panel.Controls.Add(new LiteralControl("<tbody id='toPaginador'>"));
-
+            _Panel.Controls.Add(new LiteralControl("<tbody id='toPaginador'>"));            
+            #region ListadoBody
+            /* ----------------
+             * Agregando cuerpo de listado en una tabla de HTML
+             * ----------------*/
             _Listado = model.Listado<T>().ToList();
             foreach (T item in _Listado)
             {
@@ -385,7 +432,7 @@ namespace GenericRepository
                 foreach (KeyValuePair<string, string> campo in _Fields)
                 {
                     object resultado = null;
-                    string key = campo.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "");
+                    string key = campo.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "").Replace("rbt", "");
                     bool isDDL = campo.Key.Substring(0, 3) == "ddl";
 
                     if (!isDDL)
@@ -437,6 +484,7 @@ namespace GenericRepository
 
                 } _Panel.Controls.Add(new LiteralControl("</tr>"));
             }
+            #endregion            
             _Panel.Controls.Add(new LiteralControl("</tbody></table>"));
 
             #endregion
@@ -453,6 +501,7 @@ namespace GenericRepository
                 _ = model.Obtener<T>(base.Id);
             else
                 _ = new T();
+            #region Evalua todos los DropDownList de la página
             List<DropDownList> ddls = _Panel.Controls.OfType<DropDownList>().ToList();
             foreach (DropDownList ddl in ddls)
             {
@@ -464,39 +513,76 @@ namespace GenericRepository
                     string key = par.Key;
                     Type.GetType("System.Int32");
                     if (key.Substring(key.IndexOf("-") + 1).Length > 0)
-                        key = par.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "").Replace("-", "");
+                        key = par.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "").Replace("rbt", "").Replace("-", "");
                     else
                     {
-                        key = par.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "");
+                        key = par.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "").Replace("rbt", "");
                         key = key.Substring(0, key.IndexOf("-"));
                     }
                     _.GetType().GetProperty("Id" + key).SetValue(_, Convert.ChangeType(valor, Type.GetType("System." + par.Value)), null);
-
-
-                    //_.GetType().GetProperty("Id"+par.Key).SetValue(_, Convert.ChangeType(ddl.Text, Type.GetType("System." + par.Value)), null);
                 }
             }
+            #endregion
+            #region Evalua todos los TextBox de la página
             List<TextBox> txts = _Panel.Controls.OfType<TextBox>().ToList();
             foreach (TextBox txt in txts)
             {
-               
-                    KeyValuePair<string, string> par = Fields.Where(x => x.Key == txt.ID).FirstOrDefault();
-                    string key = par.Key;
-                    key = par.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "");
-                    Type.GetType("System." + par.Value);
-                    _.GetType().GetProperty(key).SetValue(_, Convert.ChangeType(txt.Text, Type.GetType("System." + par.Value)), null);
-               
-            }
-            List<CheckBox> chks = _Panel.Controls.OfType<CheckBox>().ToList();
-            foreach (CheckBox chk in chks)
-            {
 
-                KeyValuePair<string, string> par = Fields.Where(x => x.Key == chk.ID).FirstOrDefault();
+                KeyValuePair<string, string> par = Fields.Where(x => x.Key == txt.ID).FirstOrDefault();
                 string key = par.Key;
-                key = par.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "");
+                key = par.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "").Replace("rbt", "");
                 Type.GetType("System." + par.Value);
-                _.GetType().GetProperty(key).SetValue(_, chk.Checked, null);
+                _.GetType().GetProperty(key).SetValue(_, Convert.ChangeType(txt.Text, Type.GetType("System." + par.Value)), null);
+
             }
+            #endregion
+            #region Evalua todos los CheckBox y/o RadioButton segun la propiedad eBooleanAs
+            switch (_BooleanAs)
+            {
+                case eBooleanAs.RadioButton:
+                    {
+                        List<RadioButton> rbls = _Panel.Controls.OfType<RadioButton>().ToList();
+                        foreach (RadioButton rbt in rbls)
+                        {
+                            List<KeyValuePair<string, string>> pares = Fields.Where(x => x.Key == rbt.GroupName).ToList();
+                            bool isSi = false,isNo=false;
+                            foreach (KeyValuePair<string, string> par in pares)
+                            {
+                                if (rbt.Text == "Si" && rbt.Checked)
+                                    isSi = true;
+                                if (rbt.Text == "No" && rbt.Checked)
+                                    isNo = true;
+                                string key = par.Key;
+                                key = par.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "").Replace("rbt", "");
+                                Type.GetType("System." + par.Value);
+                                if (isSi)
+                                    _.GetType().GetProperty(key).SetValue(_, !isSi, null);
+                                else
+                                    _.GetType().GetProperty(key).SetValue(_, !isNo, null);
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                case eBooleanAs.CheckBox:
+                    {
+                        List<CheckBox> chks = _Panel.Controls.OfType<CheckBox>().ToList();
+                        foreach (CheckBox chk in chks)
+                        {
+                            KeyValuePair<string, string> par = Fields.Where(x => x.Key == chk.ID).FirstOrDefault();
+                            string key = par.Key;
+                            key = par.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "").Replace("rbt", "");
+                            Type.GetType("System." + par.Value);
+                            _.GetType().GetProperty(key).SetValue(_, chk.Checked, null);
+                        }
+                        break;
+                    }
+                default:
+                    break;
+            }
+            
+            #endregion
+            
             return _;
         }
         private string _Resultado = "";
@@ -516,7 +602,7 @@ namespace GenericRepository
                 if (base.Id > 0)
                 {
                     FillCampos(model.Obtener<T>(base.Id));
-                }                
+                }
                 RefreshListado();
             }
         }
@@ -528,7 +614,7 @@ namespace GenericRepository
         {
             try
             {
-
+                #region Evalua todos los DropDownList de la página
                 List<DropDownList> ddls = _Panel.Controls.OfType<DropDownList>().ToList();
                 foreach (DropDownList ddl in ddls)
                 {
@@ -540,12 +626,12 @@ namespace GenericRepository
                         Type.GetType("System.Int32");
                         if (key.Substring(key.IndexOf("-") + 1).Length > 0)
                         {
-                            key = par.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "");
+                            key = par.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "").Replace("rbt", "");
                             result = item.GetType().GetProperty("Id" + key.Replace("-", "")).GetValue(item, null);
                         }
                         else
                         {
-                            key = par.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "");
+                            key = par.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "").Replace("rbt", "");
                             result = item.GetType().GetProperty("Id" + key.Substring(0, key.IndexOf("-"))).GetValue(item, null);
                         }
 
@@ -557,27 +643,58 @@ namespace GenericRepository
                         }
                     }
                 }
+                #endregion               
+                #region Evalua todos los TextBox de la página
                 List<TextBox> txts = _Panel.Controls.OfType<TextBox>().ToList();
                 foreach (TextBox txt in txts)
                 {
-                    
-                        KeyValuePair<string, string> par = Fields.Where(x => x.Key == txt.ID).FirstOrDefault();
-                        string key = par.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "");
-                        Type.GetType("System." + par.Value);
-                        object result = item.GetType().GetProperty(key).GetValue(item, null);
-                        txt.Text = result.ToString();
-                   
-                }
-                List<CheckBox> chks = _Panel.Controls.OfType<CheckBox>().ToList();
-                foreach (CheckBox chk in chks)
-                {
-
-                    KeyValuePair<string, string> par = Fields.Where(x => x.Key == chk.ID).FirstOrDefault();
-                    string key = par.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "");
+                    KeyValuePair<string, string> par = Fields.Where(x => x.Key == txt.ID).FirstOrDefault();
+                    string key = par.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "").Replace("rbt", "");
                     Type.GetType("System." + par.Value);
                     object result = item.GetType().GetProperty(key).GetValue(item, null);
-                    chk.Checked = (bool)result;
+                    txt.Text = result.ToString();
                 }
+
+                #endregion
+                #region Evalua todos los CheckBox y/o RadioButton segun la propiedad eBooleanAs
+                switch (_BooleanAs)
+                {
+                    case eBooleanAs.RadioButton:
+                        {
+                            List<RadioButton> rbls = _Panel.Controls.OfType<RadioButton>().ToList();
+                            foreach (RadioButton rbt in rbls)
+                            {
+                                KeyValuePair<string, string> par = Fields.Where(x => x.Key == rbt.GroupName).FirstOrDefault();
+                                string key = par.Key;
+                                key = par.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "").Replace("rbt", "");
+                                Type.GetType("System." + par.Value);
+                                object result = item.GetType().GetProperty(key).GetValue(item, null);
+
+                                if (rbt.Text == "Si" && (bool)result)
+                                    rbt.Checked = true;
+                                if (rbt.Text == "No" && !(bool)result)
+                                    rbt.Checked = true;
+                            }
+                            break;
+                        }
+                    case eBooleanAs.CheckBox:
+                        {
+                            List<CheckBox> chks = _Panel.Controls.OfType<CheckBox>().ToList();
+                            foreach (CheckBox chk in chks)
+                            {
+                                KeyValuePair<string, string> par = Fields.Where(x => x.Key == chk.ID).FirstOrDefault();
+                                string key = par.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "").Replace("rbt", "");
+                                Type.GetType("System." + par.Value);
+                                object result = item.GetType().GetProperty(key).GetValue(item, null);
+                                chk.Checked = (bool)result;
+                            }
+                            break;
+                        }
+                    default:
+                        break;
+                }                
+                #endregion
+                
             }
             catch (Exception ex)
             {
