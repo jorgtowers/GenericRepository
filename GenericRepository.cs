@@ -255,6 +255,7 @@ namespace GenericRepository
 
             #region Region del Mantenimiento para hacer CRUD de los registros
             _Panel.Controls.Add(new LiteralControl("<p onclick=app.Utils.Toogle('editPanel')><b class='fa fa-edit'></b>Presione clic o la tecla F9, para abrir panel de edición.</p><div id='editPanel' style='display: none'><span id='closeEditPanel' onclick=app.Utils.Toogle('editPanel')><b class='fa fa-times'></b></span>"));
+            _Panel.Controls.Add(new LiteralControl("<nav><h4>Gestión de datos</h4></nav>"));
             _Panel.Controls.Add(new LiteralControl("<table class='table'><tbody>"));
             #region Campos para Agregar y/o Editar la información de los registros seleccionados o por crear
             
