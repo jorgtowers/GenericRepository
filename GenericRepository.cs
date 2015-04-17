@@ -1,8 +1,8 @@
 /*!
  * ABOUT.......: Clase generica que permite conectarse a un EDM, en varías versiones de EF4, EF4SupportEF5 y EF5
  * CREADOR.....: Jorge L. Torres A.
- * ACTUALIACION: Se incluye opción de mostrar Booleanos como RadioButton o CheckBox, y se agregan propiedades para controlar el nombre de los botones del CRUD
- * ACTUALIZADO.: 16-04-2015 09:27AM
+ * ACTUALIACION: Se corrige error al obtener estaba evaluando campos Enabled=false
+ * ACTUALIZADO.: 17-04-2015 04:58AM
  * CREADO......: 20-03-2015 11:53PM
  */
 using System;
@@ -237,6 +237,9 @@ namespace GenericRepository
                     title += TDynamic.Name;
                     break;
                 case "n":
+                    title += TDynamic.Name + "es";
+                    break;
+                case "r":
                     title += TDynamic.Name + "es";
                     break;
                 case "l":
@@ -579,13 +582,14 @@ namespace GenericRepository
             List<TextBox> txts = _Panel.Controls.OfType<TextBox>().ToList();
             foreach (TextBox txt in txts)
             {
-
-                KeyValuePair<string, string> par = Fields.Where(x => x.Key == txt.ID).FirstOrDefault();
-                string key = par.Key;
-                key = par.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "").Replace("rbt", "");
-                Type.GetType("System." + par.Value);
-                _.GetType().GetProperty(key).SetValue(_, Convert.ChangeType(txt.Text, Type.GetType("System." + par.Value)), null);
-
+                if (txt.Enabled)
+                {
+                    KeyValuePair<string, string> par = Fields.Where(x => x.Key == txt.ID).FirstOrDefault();
+                    string key = par.Key;
+                    key = par.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "").Replace("rbt", "");
+                    Type.GetType("System." + par.Value);
+                    _.GetType().GetProperty(key).SetValue(_, Convert.ChangeType(txt.Text, Type.GetType("System." + par.Value)), null);
+                }
             }
             #endregion
             #region Evalua todos los CheckBox y/o RadioButton segun la propiedad eBooleanAs
