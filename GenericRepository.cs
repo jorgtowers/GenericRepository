@@ -336,7 +336,7 @@ namespace GenericRepository
 
 
 
-                    if (tipo == "String" || tipo == "Int32" || tipo == "DateTime")
+                    if (tipo == "String" || tipo == "Int32" || tipo == "DateTime" || tipo == "Decimal" || tipo == "Float")
                     {
                         _Fields.Add(new KeyValuePair<string, string>("txt" + nombre, tipo));
                         TextBox t = new TextBox() { ID = "txt" + nombre.Replace(" ", ""), CssClass = "form-control" };
