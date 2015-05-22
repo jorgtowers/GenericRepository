@@ -302,10 +302,10 @@ namespace GenericRepository
                         CssClass = "form-control"
                     };
 
-                    IList<IDescripcionId> listado = setClase != null ? setClase.Local.Cast<IDescripcionId>().OrderBy(x=>x.Descripcion).ToList() : null;
+                    IList<IDescripcionId> listado = setClase != null ? setClase.Local.Cast<IDescripcionId>().ToList() : null;
                     listado.Add(obj);
 
-                    t.DataSource = listado.OrderBy(x => x.Id);
+                    t.DataSource = listado.OrderBy(x => x.Descripcion);
                     t.DataBind();
 
                     _Panel.Controls.Add(t);
