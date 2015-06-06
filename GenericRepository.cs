@@ -285,7 +285,8 @@ namespace GenericRepository
                     Type clase = Type.GetType(propiedad.PropertyType.Namespace + "." + nombre);
 
                     IDescripcionId obj = (IDescripcionId)Activator.CreateInstance(clase);
-                    obj.Descripcion = "( -- Seleccionar -- )";
+                    //obj.Descripcion = "( -- Seleccionar -- )";
+                    obj.Descripcion = "( -- Seleccione un item de " + clase.Name + " -- )";
                     obj.Id = -1;
 
                     DbSet setClase = null;
