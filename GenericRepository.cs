@@ -340,6 +340,7 @@ namespace GenericRepository
                     {
                         _Fields.Add(new KeyValuePair<string, string>("txt" + nombre, tipo));
                         TextBox t = new TextBox() { ID = "txt" + nombre.Replace(" ", ""), CssClass = "form-control" };
+                        t.Attributes.Add("placeHolder", nombre);
                         if (nombre == "Id")
                         {
                             _Panel.Controls.Add(new LiteralControl("<tr class='help' style='display:none'><td  class='info'><b>" + nombre + "</b><p>" + labelDescripcion + "</p></td><td>"));
