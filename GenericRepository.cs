@@ -403,7 +403,7 @@ namespace GenericRepository
             Label lblEstatus = new Label() { ID = "lblEstatus" };
             _Panel.Controls.Add(lblEstatus);
             _Panel.Controls.Add(new LiteralControl("</td></tr>"));            
-            _Panel.Controls.Add(new LiteralControl("<tr><td colspan='2' style='text-align: right;'>"));
+            _Panel.Controls.Add(new LiteralControl("<tr><td colspan='2' style='text-align: right;position:relative'>"));
             #region Botones de accion para Agregar, Modificar, Eliminar y/o Cancelar
             /* ----------------
              * Agregando botones de acciones a la página
@@ -418,7 +418,7 @@ namespace GenericRepository
             _Panel.Controls.Add(btnAgregar);
 
             Button btnEliminar = new Button() { ID = "btnEliminar", CssClass = "btn btn-danger", Text = _NombreBotonEliminar };
-            btnEliminar.Attributes.Add("style", "position: absolute;  left: 2em;");
+            btnEliminar.Attributes.Add("style", "position: absolute;  margin-top: .5em;");
             btnEliminar.Click += Eliminar;
             if (base.Id < 0)
                 btnEliminar.Visible = false;
