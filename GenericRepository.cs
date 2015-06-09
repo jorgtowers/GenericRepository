@@ -859,7 +859,7 @@ namespace GenericRepository
             if (todos)
                 t.Add(new T() { Id = -1, Descripcion = "( -- Todos -- )" });
             if (seleccionar)
-                t.Add(new T() { Id = -1, Descripcion = "( -- Seleccionar -- )" });
+                t.Add(new T() { Id = -1, Descripcion = "( -- Seleccione un item de " + tipo.GenericTypeArguments[0].Name + " -- )" });
             ctrl.DataTextField = "Descripcion";
             ctrl.DataValueField = "Id";
             if (orderByDescripcion)
