@@ -855,6 +855,7 @@ namespace GenericRepository
     {
         public static void Llenar<T>(ListControl ctrl, List<T> datos, bool todos = false, bool seleccionar = false, bool orderByDescripcion = false) where T : IDescripcionId, new()
         {
+            Type tipo= datos.GetType();
             List<T> t = datos;
             if (todos)
                 t.Add(new T() { Id = -1, Descripcion = "( -- Todos -- )" });
