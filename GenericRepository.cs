@@ -1,8 +1,8 @@
 /*!
  * ABOUT.......: Clase generica que permite conectarse a un EDM, en varías versiones de EF4, EF4SupportEF5 y EF5
  * CREADOR.....: Jorge L. Torres A.
- * ACTUALIACION: Se corrige error al obtener estaba evaluando campos Enabled=false
- * ACTUALIZADO.: 17-04-2015 04:58AM
+ * ACTUALIACION: Se agrega información al DropDownList que se llena en Utils.Llenar<T>, ampliando datos del tipo de la clase 
+ * ACTUALIZADO.: 09-06-2015 01:40PM
  * CREADO......: 20-03-2015 11:53PM
  */
 using System;
