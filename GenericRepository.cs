@@ -2,7 +2,7 @@
  * ABOUT.......: Clase generica que permite conectarse a un EDM, en varías versiones de EF4, EF4SupportEF5 y EF5
  * CREADOR.....: Jorge L. Torres A.
  * ACTUALIACION: Se agrega información al DropDownList que se llena en Utils.Llenar<T>, ampliando datos del tipo de la clase 
- * ACTUALIZADO.: 09-06-2015 01:40PM
+ * ACTUALIZADO.: 15-06-2015 01:40PM
  * CREADO......: 20-03-2015 11:53PM
  * ----------------------------------------------------------------------------------------------------------------------------- */
 using System;
@@ -261,7 +261,7 @@ namespace GenericRepository
             _Panel.Controls.Add(new LiteralControl("<nav><h4>Gestión de datos</h4></nav>"));
             _Panel.Controls.Add(new LiteralControl("<table class='table'><tbody>"));
             #region Campos para Agregar y/o Editar la información de los registros seleccionados o por crear
-            
+
             foreach (PropertyInfo propiedad in propiedades)
             {
                 string tipo = "";
@@ -281,7 +281,7 @@ namespace GenericRepository
                 {
                     nombre = propiedad.PropertyType.Name;
                     _Fields.Add(new KeyValuePair<string, string>("ddl" + nombre + "-" + propiedad.Name.Replace(nombre, ""), "Int32"));
-                    _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'><b>" + propiedad.Name + "</b><p></p></td><td>"));
+                    _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'><b>" + Utils.SplitCamelCase(propiedad.Name) + "</b><p></p></td><td>"));
                     Type clase = Type.GetType(propiedad.PropertyType.Namespace + "." + nombre);
 
                     IDescripcionId obj = (IDescripcionId)Activator.CreateInstance(clase);
@@ -341,10 +341,10 @@ namespace GenericRepository
                     {
                         _Fields.Add(new KeyValuePair<string, string>("txt" + nombre, tipo));
                         TextBox t = new TextBox() { ID = "txt" + nombre.Replace(" ", ""), CssClass = "form-control" };
-                        t.Attributes.Add("placeHolder", nombre);
+                        t.Attributes.Add("placeHolder", Utils.SplitCamelCase(nombre));
                         if (nombre == "Id")
                         {
-                            _Panel.Controls.Add(new LiteralControl("<tr class='help' style='display:none'><td  class='info'><b>" + nombre + "</b><p>" + labelDescripcion + "</p></td><td>"));
+                            _Panel.Controls.Add(new LiteralControl("<tr class='help' style='display:none'><td  class='info'><b>" + Utils.SplitCamelCase(nombre) + "</b><p>" + labelDescripcion + "</p></td><td>"));
                             t.Enabled = false;
                             _Panel.Controls.Add(t);
                             _Panel.Controls.Add(new LiteralControl("</td></tr>"));
@@ -352,7 +352,7 @@ namespace GenericRepository
                         else
                             if (!nombre.Contains("Id"))
                             {
-                                _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'><b>" + nombre + "</b><p>" + labelDescripcion + "</p></td><td>"));
+                                _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'><b>" + Utils.SplitCamelCase(nombre) + "</b><p>" + labelDescripcion + "</p></td><td>"));
                                 _Panel.Controls.Add(t);
                                 _Panel.Controls.Add(new LiteralControl("</td></tr>"));
                             }
@@ -367,7 +367,7 @@ namespace GenericRepository
                             case eBooleanAs.RadioButton:
                                 {
                                     _Fields.Add(new KeyValuePair<string, string>("rbt" + nombre, tipo));
-                                    _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'><b>" + nombre + "</b><p>" + labelDescripcion + "</p></td><td>"));
+                                    _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'><b>" + Utils.SplitCamelCase(nombre) + "</b><p>" + labelDescripcion + "</p></td><td>"));
                                     RadioButton t = new RadioButton() { GroupName = "rbt" + nombre.Replace(" ", ""), Text = "Si" };
                                     _Panel.Controls.Add(t);
                                     t = new RadioButton() { GroupName = "rbt" + nombre.Replace(" ", ""), Text = "No" };
@@ -378,7 +378,7 @@ namespace GenericRepository
                             case eBooleanAs.CheckBox:
                                 {
                                     _Fields.Add(new KeyValuePair<string, string>("chk" + nombre, tipo));
-                                    _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'><b>" + nombre + "</b><p>" + labelDescripcion + "</p></td><td>"));
+                                    _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'><b>" + Utils.SplitCamelCase(nombre) + "</b><p>" + labelDescripcion + "</p></td><td>"));
                                     CheckBox t = new CheckBox() { ID = "chk" + nombre.Replace(" ", "") };
                                     _Panel.Controls.Add(t);
                                     _Panel.Controls.Add(new LiteralControl("</td></tr>"));
@@ -898,6 +898,10 @@ namespace GenericRepository
             if (span.Seconds <= 5)
                 return "ahora";
             return string.Empty;
+        }
+        public static string SplitCamelCase(string input)
+        {
+            return System.Text.RegularExpressions.Regex.Replace(input, "([A-Z])", " $1", System.Text.RegularExpressions.RegexOptions.Compiled).Trim();
         }
     }
 
