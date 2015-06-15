@@ -1,8 +1,8 @@
 /* ----------------------------------------------------------------------------------------------------------------------------
  * ABOUT.......: Clase generica que permite conectarse a un EDM, en varías versiones de EF4, EF4SupportEF5 y EF5
  * CREADOR.....: Jorge L. Torres A.
- * ACTUALIACION: Se agrega información al DropDownList que se llena en Utils.Llenar<T>, ampliando datos del tipo de la clase 
- * ACTUALIZADO.: 15-06-2015 01:40PM
+ * ACTUALIACION: Se incorpora lectura de XML para info de sumarios en la documentación de propiedades del modelo EDM
+ * ACTUALIZADO.: 15-06-2015 05:22PM
  * CREADO......: 20-03-2015 11:53PM
  * ----------------------------------------------------------------------------------------------------------------------------- */
 using System;
@@ -216,6 +216,7 @@ namespace GenericRepository
                 TDynamic = typeof(T);
             else
                 TDynamic = Type.GetType(typeof(T).Namespace + "." + base.Clase);
+
             _Panel = this.Controls.OfType<Panel>().FirstOrDefault();
             if (_Panel == null)
             {
@@ -225,10 +226,19 @@ namespace GenericRepository
                 ContentPlaceHolder cph = form.Controls.OfType<ContentPlaceHolder>().FirstOrDefault();
                 cph.Controls.Add(_Panel);
             }
-            #region Definición del título de la página a partir de la entidad 
-            /* ----------------
+
+            /* ---------------------------------------------------
+             * Lectura del esamblado y de la documentación en XML
+             * --------------------------------------------------- */
+            string ruta = HttpContext.Current.Server.MapPath(@"\bin\" + TDynamic.Assembly.ManifestModule.Name );
+            Assembly dll = Assembly.LoadFrom(ruta);
+            XDocument xml = XDocument.Load(ruta.Replace(".dll", ".xml"));
+            var sumarios = xml.Descendants("member").Where(x => x.LastAttribute.Value.Substring(0, 2) == "P:").ToList();
+
+            #region Definición del título de la página a partir de la entidad
+            /* ------------------------------
              * Agregando título a la pagina
-             * ----------------*/
+             * ------------------------------ */
             string title = "Maestro de ";
             string end = TDynamic.Name.Substring(TDynamic.Name.Length - 1).ToLower();
             switch (end)
@@ -251,7 +261,7 @@ namespace GenericRepository
             }
             this.Page.Title = title;
             #endregion
-            
+
             base.OnInit(e);
 
             PropertyInfo[] propiedades = TDynamic.GetProperties();
@@ -280,8 +290,10 @@ namespace GenericRepository
                 if (TDynamic.Namespace == propiedad.PropertyType.Namespace)
                 {
                     nombre = propiedad.PropertyType.Name;
+                    var sumarioPropiedad =sumarios.Where(x => x.LastAttribute.Value.Contains(nombre)).FirstOrDefault();
+
                     _Fields.Add(new KeyValuePair<string, string>("ddl" + nombre + "-" + propiedad.Name.Replace(nombre, ""), "Int32"));
-                    _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'><b>" + Utils.SplitCamelCase(propiedad.Name) + "</b><p></p></td><td>"));
+                    _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'><b>" + Utils.SplitCamelCase(propiedad.Name) + "</b><p>" + (sumarioPropiedad != null ? sumarioPropiedad.Value.Trim() : "") + "</p></td><td>"));
                     Type clase = Type.GetType(propiedad.PropertyType.Namespace + "." + nombre);
 
                     IDescripcionId obj = (IDescripcionId)Activator.CreateInstance(clase);
@@ -316,26 +328,9 @@ namespace GenericRepository
                 if (propiedad.PropertyType.Namespace == "System")
                 {
                     nombre = propiedad.Name;
-                    /* ----------------
-                     * Leyendo la Descripcion de la clase Info:System.Attribute
-                     * ----------------*/
+                    var sumarioPropiedad = sumarios.Where(x => x.LastAttribute.Value.Contains(nombre)).FirstOrDefault();
                     string labelDescripcion = "";
-                    try
-                    {
-                        //foreach (System.Attribute attr in attrs)
-                        //{
-                        //    if (attr is Info)
-                        //    {
-                        //        Info a = (Info)attr;
-                        //        labelDescripcion = a.Descripcion;
-                        //    }
-                        //}
-                        labelDescripcion = ((Info)System.Attribute.GetCustomAttributes(propiedad)[0]).Descripcion;
-                    }
-                    catch { }
-
-
-
+                    labelDescripcion = (sumarioPropiedad != null ? sumarioPropiedad.Value.Trim() : "");                    
 
                     if (tipo == "String" || tipo == "Int32" || tipo == "DateTime" || tipo == "Decimal" || tipo == "Float")
                     {
@@ -404,13 +399,13 @@ namespace GenericRepository
             _Panel.Controls.Add(new LiteralControl("<tr><td colspan='2'>"));
             Label lblEstatus = new Label() { ID = "lblEstatus" };
             _Panel.Controls.Add(lblEstatus);
-            _Panel.Controls.Add(new LiteralControl("</td></tr>"));            
+            _Panel.Controls.Add(new LiteralControl("</td></tr>"));
             _Panel.Controls.Add(new LiteralControl("<tr><td colspan='2' style='text-align: right;position:relative'>"));
             #region Botones de accion para Agregar, Modificar, Eliminar y/o Cancelar
             /* ----------------
              * Agregando botones de acciones a la página
              * ----------------*/
-            
+
 
             Button btnAgregar = new Button() { ID = "btnAgregar", CssClass = "btn btn-success", Text = _NombreBotonAgregar };
             btnAgregar.Click += Agregar;
@@ -431,9 +426,9 @@ namespace GenericRepository
             btnModificar.OnClientClick = "return app.Utils.ValidarCampos('editPanel',true)";
             if (base.Id < 0)
                 btnModificar.Visible = false;
-            _Panel.Controls.Add(btnModificar);            
+            _Panel.Controls.Add(btnModificar);
 
-            Button btnLimpiar = new Button() { ID = "btnLimpiar", CssClass = "btn btn-default", Text = _NombreBotonLimpiar};
+            Button btnLimpiar = new Button() { ID = "btnLimpiar", CssClass = "btn btn-default", Text = _NombreBotonLimpiar };
             btnLimpiar.Click += Limpiar;
             _Panel.Controls.Add(btnLimpiar);
 
@@ -462,9 +457,9 @@ namespace GenericRepository
                         _Panel.Controls.Add(new LiteralControl("<td>" + key.Substring(0, key.IndexOf("-")) + "</td>"));
                 }
             }
-            #endregion            
+            #endregion
             _Panel.Controls.Add(new LiteralControl("</tr></thead>"));
-            _Panel.Controls.Add(new LiteralControl("<tbody id='toPaginador'>"));            
+            _Panel.Controls.Add(new LiteralControl("<tbody id='toPaginador'>"));
             #region ListadoBody
             /* ----------------
              * Agregando cuerpo de listado en una tabla de HTML
@@ -534,14 +529,14 @@ namespace GenericRepository
                                     default:
                                         break;
                                 }
-                                
+
                             }
                         }
                     }
 
                 } _Panel.Controls.Add(new LiteralControl("</tr>"));
             }
-            #endregion            
+            #endregion
             _Panel.Controls.Add(new LiteralControl("</tbody></table>"));
 
             #endregion
@@ -603,7 +598,7 @@ namespace GenericRepository
                         foreach (RadioButton rbt in rbls)
                         {
                             List<KeyValuePair<string, string>> pares = Fields.Where(x => x.Key == rbt.GroupName).ToList();
-                            bool isSi = false,isNo=false;
+                            bool isSi = false, isNo = false;
                             foreach (KeyValuePair<string, string> par in pares)
                             {
                                 if (rbt.Text == "Si" && rbt.Checked)
@@ -638,9 +633,9 @@ namespace GenericRepository
                 default:
                     break;
             }
-            
+
             #endregion
-            
+
             return _;
         }
         private string _Resultado = "";
@@ -701,7 +696,7 @@ namespace GenericRepository
                         }
                     }
                 }
-                #endregion               
+                #endregion
                 #region Evalua todos los TextBox de la página
                 List<TextBox> txts = _Panel.Controls.OfType<TextBox>().ToList();
                 foreach (TextBox txt in txts)
@@ -750,9 +745,9 @@ namespace GenericRepository
                         }
                     default:
                         break;
-                }                
+                }
                 #endregion
-                
+
             }
             catch (Exception ex)
             {
@@ -831,12 +826,12 @@ namespace GenericRepository
                 }
             }
             foreach (RadioButton rbt in _Panel.Controls.OfType<RadioButton>())
-            {                
-                    ((RadioButton)rbt).Checked = false;                
+            {
+                ((RadioButton)rbt).Checked = false;
             }
             foreach (CheckBox chk in _Panel.Controls.OfType<CheckBox>())
             {
-                ((CheckBox)chk).Checked = false;                
+                ((CheckBox)chk).Checked = false;
             }
             RefreshListado();
             Button btn = ((Button)sender);
