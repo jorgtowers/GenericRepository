@@ -2,7 +2,7 @@
  * ABOUT.......: Clase generica que permite conectarse a un EDM, en varías versiones de EF4, EF4SupportEF5 y EF5
  * CREADOR.....: Jorge L. Torres A.
  * ACTUALIACION: Se incorpora lectura de XML para info de sumarios en la documentación de propiedades del modelo EDM
- * ACTUALIZADO.: 15-06-2015 05:22PM
+ * ACTUALIZADO.: 16-06-2015 08:29PM
  * CREADO......: 20-03-2015 11:53PM
  * ----------------------------------------------------------------------------------------------------------------------------- */
 using System;
@@ -290,7 +290,8 @@ namespace GenericRepository
                 if (TDynamic.Namespace == propiedad.PropertyType.Namespace)
                 {
                     nombre = propiedad.PropertyType.Name;
-                    var sumarioPropiedad =sumarios.Where(x => x.LastAttribute.Value.Contains(nombre)).FirstOrDefault();
+                    var sumarioPropiedad = sumarios.Where(x => x.LastAttribute.Value.Contains("." + nombre)).FirstOrDefault();
+
 
                     _Fields.Add(new KeyValuePair<string, string>("ddl" + nombre + "-" + propiedad.Name.Replace(nombre, ""), "Int32"));
                     _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'><b>" + Utils.SplitCamelCase(propiedad.Name) + "</b><p>" + (sumarioPropiedad != null ? sumarioPropiedad.Value.Trim() : "") + "</p></td><td>"));
@@ -328,7 +329,10 @@ namespace GenericRepository
                 if (propiedad.PropertyType.Namespace == "System")
                 {
                     nombre = propiedad.Name;
-                    var sumarioPropiedad = sumarios.Where(x => x.LastAttribute.Value.Contains(nombre)).FirstOrDefault();
+                    var sumarioPropiedad = sumarios.Where(x => x.LastAttribute.Value.Contains("." + nombre)).FirstOrDefault();
+                    /* ----------------
+                     * Leyendo la Descripcion de la clase Info:System.Attribute
+                     * ----------------*/
                     string labelDescripcion = "";
                     labelDescripcion = (sumarioPropiedad != null ? sumarioPropiedad.Value.Trim() : "");                    
 
