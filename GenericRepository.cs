@@ -456,9 +456,9 @@ namespace GenericRepository
                 if (!key.Contains("Id"))
                 {
                     if (key.Substring(key.IndexOf("-") + 1).Length > 0)
-                        _Panel.Controls.Add(new LiteralControl("<td>" + key.Replace("-", "") + "</td>"));
+                        _Panel.Controls.Add(new LiteralControl("<td>" + Utils.SplitCamelCase( key.Replace("-", "")) + "</td>"));
                     else
-                        _Panel.Controls.Add(new LiteralControl("<td>" + key.Substring(0, key.IndexOf("-")) + "</td>"));
+                        _Panel.Controls.Add(new LiteralControl("<td>" + Utils.SplitCamelCase(key.Substring(0, key.IndexOf("-"))) + "</td>"));
                 }
             }
             #endregion
