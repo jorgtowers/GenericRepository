@@ -501,7 +501,11 @@ namespace GenericRepository
                             propiedad = item.GetType().GetProperty("Id" + key.Substring(0, key.IndexOf("-")));
                             key = key.Replace("-", "");
                         }
-                        id = propiedad.GetValue(item, null);
+                        try
+                        {
+                            id = propiedad.GetValue(item, null);
+                        }
+                        catch { id = 0; }
 
                         Type clase = Type.GetType(TDynamic.Namespace + "." + key);
                         DbSet setClase = null;
@@ -509,7 +513,11 @@ namespace GenericRepository
                         {
                             setClase = model.model.Set(clase);
                             object instancia = setClase.Find(id);
-                            resultado = instancia.GetType().GetProperty("Descripcion").GetValue(instancia, null);
+                            try
+                            {
+                                resultado = instancia.GetType().GetProperty("Descripcion").GetValue(instancia, null);
+                            }
+                            catch{ resultad=""; }
                         }
                     }
                     if (key == "Id")
