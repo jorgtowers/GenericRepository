@@ -411,16 +411,8 @@ namespace GenericRepository
              * Agregando botones de acciones a la página
              * ----------------*/
 
-
-            Button btnAgregar = new Button() { ID = "btnAgregar", CssClass = "btn btn-success", Text = _NombreBotonAgregar };
-            btnAgregar.Click += Agregar;
-            btnAgregar.OnClientClick = "return app.Utils.ValidarCampos('editPanel',true)";
-            if (base.Id > 0)
-                btnAgregar.Visible = false;
-            _Panel.Controls.Add(btnAgregar);
-
             Button btnEliminar = new Button() { ID = "btnEliminar", CssClass = "btn btn-danger", Text = _NombreBotonEliminar };
-            btnEliminar.Attributes.Add("style", "position: absolute;  margin-top: .5em;");
+            btnEliminar.Attributes.Add("style", "position: absolute;  left:0");
             btnEliminar.Click += Eliminar;
             if (base.Id < 0)
                 btnEliminar.Visible = false;
@@ -433,6 +425,13 @@ namespace GenericRepository
                 btnModificar.Visible = false;
             _Panel.Controls.Add(btnModificar);
 
+            Button btnAgregar = new Button() { ID = "btnAgregar", CssClass = "btn btn-success", Text = _NombreBotonAgregar };
+            btnAgregar.Click += Agregar;
+            btnAgregar.OnClientClick = "return app.Utils.ValidarCampos('editPanel',true)";
+            if (base.Id > 0)
+                btnAgregar.Visible = false;
+            _Panel.Controls.Add(btnAgregar);
+            
             Button btnLimpiar = new Button() { ID = "btnLimpiar", CssClass = "btn btn-default", Text = _NombreBotonLimpiar };
             btnLimpiar.Click += Limpiar;
             _Panel.Controls.Add(btnLimpiar);
