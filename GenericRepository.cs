@@ -517,7 +517,7 @@ namespace GenericRepository
                             {
                                 resultado = instancia.GetType().GetProperty("Descripcion").GetValue(instancia, null);
                             }
-                            catch{ resultad=""; }
+                            catch{ resultado=""; }
                         }
                     }
                     if (key == "Id")
