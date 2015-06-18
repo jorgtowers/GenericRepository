@@ -414,14 +414,14 @@ namespace GenericRepository
             Button btnEliminar = new Button() { ID = "btnEliminar", CssClass = "btn btn-danger", Text = _NombreBotonEliminar };
             btnEliminar.Attributes.Add("style", "position: absolute;  left:0");
             btnEliminar.Click += Eliminar;
-            if (base.Id < 0)
+            if (base.Id < 1)
                 btnEliminar.Visible = false;
             _Panel.Controls.Add(btnEliminar);
 
             Button btnModificar = new Button() { ID = "btnModificar", CssClass = "btn btn-primary", Text = _NombreBotonModificar };
             btnModificar.Click += Modificar;
             btnModificar.OnClientClick = "return app.Utils.ValidarCampos('editPanel',true)";
-            if (base.Id < 0)
+            if (base.Id < 1)
                 btnModificar.Visible = false;
             _Panel.Controls.Add(btnModificar);
 
