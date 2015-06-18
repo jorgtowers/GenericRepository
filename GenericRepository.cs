@@ -501,6 +501,9 @@ namespace GenericRepository
                             propiedad = item.GetType().GetProperty("Id" + key.Substring(0, key.IndexOf("-")));
                             key = key.Replace("-", "");
                         }
+                        /* ------------------------------------------------------------------------
+                         * Excpeción controlada al llenar ddlList de tablas relacionadas asi mismas
+                         * ------------------------------------------------------------------------ */
                         try
                         {
                             id = propiedad.GetValue(item, null);
