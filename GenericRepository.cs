@@ -2,7 +2,7 @@
  * ABOUT.......: Clase generica que permite conectarse a un EDM, en varías versiones de EF4, EF4SupportEF5 y EF5
  * CREADOR.....: Jorge L. Torres A.
  * ACTUALIACION: Se incorpora lectura de XML para info de sumarios en la documentación de propiedades del modelo EDM
- * ACTUALIZADO.: 16-06-2015 08:29PM
+ * ACTUALIZADO.: 18-06-2015 10:26PM
  * CREADO......: 20-03-2015 11:53PM
  * ----------------------------------------------------------------------------------------------------------------------------- */
 using System;
@@ -23,10 +23,11 @@ using PageDynamc.Model;
 using System.Data.Entity.Core.Objects;
 using System.Data.Entity.Core.Objects.DataClasses;
 using System.Web.UI.HtmlControls;
+using System.Xml.Linq;
 
 namespace GenericRepository
 {
-    [Info(Descripcion = "Clase que implementa metodos genericos apartir del modelo de EDM")]
+    [Information(Descripcion = "Clase que implementa metodos genericos apartir del modelo de EDM")]
     public class PageGeneric<T> : AbstractPage where T : class,new()
     {
 
@@ -113,7 +114,7 @@ namespace GenericRepository
     /// Clase especializada para la generación de páginas web apartir del nombre de una instancia, usando reflextion
     /// </summary>
     /// <typeparam name="T">Instancia de Type a usar</typeparam>
-    [Info(Descripcion = "Clase especializada para la generación de páginas web apartir del nombre de una instancia, usando reflextion")]
+    [Information(Descripcion = "Clase especializada para la generación de páginas web apartir del nombre de una instancia, usando reflextion")]
     public abstract class PageDynamic<T> : AbstractPage where T : class, new()
     {
         /// <summary>
@@ -1351,14 +1352,14 @@ namespace GenericRepository
             string Descripcion { get; set; }
             int Id { get; set; }
         }
-        public class Info : System.Attribute
+        public class Information : System.Attribute
         {
             public string Version;
             public string Creador;
             public string Colaborador;
             public string Descripcion;
             public string Creado;
-            public Info()
+            public Information()
             {
                 Creado = "20/03/2015";
                 Version = "1.0.0.0";
@@ -1369,7 +1370,7 @@ namespace GenericRepository
         /// Clase generica que recibe un contexto y puede trabajar con cualer clase del model
         /// </summary>
         /// <typeparam name="TContext">Object del Contexto del modelo de entity EDM</typeparam>
-        [Info(Descripcion = "Clase generica que recibe un contexto y puede trabajar con cualer clase del model")]
+        [Information(Descripcion = "Clase generica que recibe un contexto y puede trabajar con cualer clase del model")]
         public partial class GenericRepository<TContext> where TContext : DbContext, new()
         {
             /// <summary>
