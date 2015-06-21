@@ -247,7 +247,7 @@ namespace GenericRepository
             string ruta = HttpContext.Current.Server.MapPath(@"\bin\" + TDynamic.Assembly.ManifestModule.Name);
             Assembly dll = Assembly.LoadFrom(ruta);
             XDocument xml = XDocument.Load(ruta.Replace(".dll", ".xml"));
-            var sumarios = xml.Descendants("member").Where(x => x.LastAttribute.Value.Substring(0, 2) == "P:").ToList();
+            var sumarios = xml.Descendants("member").Where(x => x.LastAttribute.Value.Substring(0, 2) == "P:" && x.LastAttribute.Value.Contains(TDynamic.Namespace)).ToList();
 
             #region Definición del título de la página a partir de la entidad
             /* ------------------------------
