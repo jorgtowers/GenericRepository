@@ -3,8 +3,10 @@
  * CREADOR.....: Jorge L. Torres A.
  * ACTUALIACION: Se agregan class='sortable filterable" para que los listados trabajen con los JS sortTable.js y 
  *               filterTable.js que permiten filtrar y ordenar la tabla, y se agrega id='listado' requerido por 
- *               el script sortTable.js
- * ACTUALIZADO.: 21-06-2015 10:26PM
+ *               el script sortTable.js, se agrega propiedad a PageDynamic<T> que permite configuarar campos de 
+ *               texto como Multilinea, para esto debe indicarse cuales campos separados por coma (,) en la 
+ *               propiedad CamposTextoMultiLinea
+ * ACTUALIZADO.: 21-06-2015 04:26PM
  * CREADO......: 20-03-2015 11:53PM
  * ----------------------------------------------------------------------------------------------------------------------------- */
 using System;
@@ -113,7 +115,7 @@ namespace GenericRepository
 
     }
     /// <summary>
-    /// Clase especializada para la generación de páginas web apartir del nombre de una instancia, usando reflextion
+    /// Clase especializada para la generación de páginas web apartir del nombre de una instancia, usando reflextion, para reescribir su configuración se debe hacer un override de OnInit y afectar a las propiedades expuestas
     /// </summary>
     /// <typeparam name="T">Instancia de Type a usar</typeparam>
     [Information(Descripcion = "Clase especializada para la generación de páginas web apartir del nombre de una instancia, usando reflextion")]
@@ -130,7 +132,16 @@ namespace GenericRepository
         public eBooleanAs BooleanAs
         {
             get { return _BooleanAs; }
-            set { _BooleanAs = value; }
+            set { _BooleanAs = value; }        
+        }
+        private string _CamposTextoMultiLinea = "texto";
+        /// <summary>
+        /// Indique nombre de campos separando por coma (,) los que serán tipo "Multilinea", por defecto buscará campo llamado TEXTO. Ej.: Texto,Observacion,Descripcion
+        /// </summary>
+        public string CamposTextoMultiLinea
+        {
+            get { return _CamposTextoMultiLinea; }
+            set { _CamposTextoMultiLinea = value; }
         }
         private string _NombreBotonAgregar = "Agregar";
         /// <summary>
@@ -233,7 +244,7 @@ namespace GenericRepository
             /* ---------------------------------------------------
              * Lectura del esamblado y de la documentación en XML
              * --------------------------------------------------- */
-            string ruta = HttpContext.Current.Server.MapPath(@"\bin\" + TDynamic.Assembly.ManifestModule.Name );
+            string ruta = HttpContext.Current.Server.MapPath(@"\bin\" + TDynamic.Assembly.ManifestModule.Name);
             Assembly dll = Assembly.LoadFrom(ruta);
             XDocument xml = XDocument.Load(ruta.Replace(".dll", ".xml"));
             var sumarios = xml.Descendants("member").Where(x => x.LastAttribute.Value.Substring(0, 2) == "P:").ToList();
@@ -337,12 +348,18 @@ namespace GenericRepository
                      * Leyendo la Descripcion de la clase Info:System.Attribute
                      * ----------------*/
                     string labelDescripcion = "";
-                    labelDescripcion = (sumarioPropiedad != null ? sumarioPropiedad.Value.Trim() : "");                    
+                    labelDescripcion = (sumarioPropiedad != null ? sumarioPropiedad.Value.Trim() : "");
 
                     if (tipo == "String" || tipo == "Int32" || tipo == "DateTime" || tipo == "Decimal" || tipo == "Float")
                     {
                         _Fields.Add(new KeyValuePair<string, string>("txt" + nombre, tipo));
                         TextBox t = new TextBox() { ID = "txt" + nombre.Replace(" ", ""), CssClass = "form-control" };
+                        foreach (string item in _CamposTextoMultiLinea.ToLower().Split(','))
+                        {
+                            if(nombre.ToLower()==item)
+                            t.TextMode = TextBoxMode.MultiLine;
+                        }
+                            
                         t.Attributes.Add("placeHolder", Utils.SplitCamelCase(nombre));
                         if (nombre == "Id")
                         {
@@ -433,7 +450,7 @@ namespace GenericRepository
             if (base.Id > 0)
                 btnAgregar.Visible = false;
             _Panel.Controls.Add(btnAgregar);
-            
+
             Button btnLimpiar = new Button() { ID = "btnLimpiar", CssClass = "btn btn-default", Text = _NombreBotonLimpiar };
             btnLimpiar.Click += Limpiar;
             _Panel.Controls.Add(btnLimpiar);
@@ -458,7 +475,7 @@ namespace GenericRepository
                 if (!key.Contains("Id"))
                 {
                     if (key.Substring(key.IndexOf("-") + 1).Length > 0)
-                        _Panel.Controls.Add(new LiteralControl("<td>" + Utils.SplitCamelCase( key.Replace("-", "")) + "</td>"));
+                        _Panel.Controls.Add(new LiteralControl("<td>" + Utils.SplitCamelCase(key.Replace("-", "")) + "</td>"));
                     else
                         _Panel.Controls.Add(new LiteralControl("<td>" + Utils.SplitCamelCase(key.Substring(0, key.IndexOf("-"))) + "</td>"));
                 }
@@ -522,7 +539,7 @@ namespace GenericRepository
                             {
                                 resultado = instancia.GetType().GetProperty("Descripcion").GetValue(instancia, null);
                             }
-                            catch{ resultado=""; }
+                            catch { resultado = ""; }
                         }
                     }
                     if (key == "Id")
