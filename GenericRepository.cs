@@ -304,7 +304,7 @@ namespace GenericRepository
                 if (TDynamic.Namespace == propiedad.PropertyType.Namespace)
                 {
                     nombre = propiedad.PropertyType.Name;
-                    var sumarioPropiedad = sumarios.Where(x => x.LastAttribute.Value.Contains("." + nombre)).FirstOrDefault();
+                    var sumarioPropiedad = sumarios.Where(x => x.LastAttribute.Value.Contains(TDynamic.FullName + "." + nombre)).FirstOrDefault();
 
 
                     _Fields.Add(new KeyValuePair<string, string>("ddl" + nombre + "-" + propiedad.Name.Replace(nombre, ""), "Int32"));
@@ -343,7 +343,7 @@ namespace GenericRepository
                 if (propiedad.PropertyType.Namespace == "System")
                 {
                     nombre = propiedad.Name;
-                    var sumarioPropiedad = sumarios.Where(x => x.LastAttribute.Value.Contains("." + nombre)).FirstOrDefault();
+                    var sumarioPropiedad = sumarios.Where(x => x.LastAttribute.Value.Contains(TDynamic.FullName + "." + nombre)).FirstOrDefault();
                     /* ----------------
                      * Leyendo la Descripcion de la clase Info:System.Attribute
                      * ----------------*/
@@ -462,7 +462,8 @@ namespace GenericRepository
             #endregion
             #region Region del Listado en tabla HTML, muestra todos los registros de la tabla
             _Panel.Controls.Add(new LiteralControl("<nav><h2>" + title + "</h2></nav>"));
-            _Panel.Controls.Add(new LiteralControl("<table id='listado' class='table table-condensed table-striped filterable sortable'><thead><tr>"));
+            _Panel.Controls.Add(new LiteralControl("<input id='filtro' class='form-control' placeholder='Buscar...'/>"));
+            _Panel.Controls.Add(new LiteralControl("<table id='listado' class='table table-condensed table-striped sortable filterable more'><thead><tr>"));
             #region ListadoHeader
             /* ----------------
              * Agregando encabezados de listado en una tabla de HTML
