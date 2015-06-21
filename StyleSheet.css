@@ -1,7 +1,11 @@
 /* --------------------------------------------------------------
  * Base de estilo para tablas creada por el PageDynamic
  * ------------------------------------------------------------- */
-
+.requerido {
+    background: rgb(255, 231, 231);
+    border: 1px solid red;
+}
+.highlighted { background: yellow; }
 .help {
 }
 
