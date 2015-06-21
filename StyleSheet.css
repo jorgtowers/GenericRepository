@@ -1,6 +1,22 @@
 /* --------------------------------------------------------------
  * Base de estilo para tablas creada por el PageDynamic
  * ------------------------------------------------------------- */
+ #editPanel {
+    box-shadow: 0px 1px 6px;
+    padding: 2em;
+}
+#closeEditPanel {
+    position: absolute;
+    right: 18px;
+    top: 32px;
+    border: 1px solid;
+    padding: .4em;
+    background: #d43f3a;
+    color: white;
+    width: 30px;
+    text-align: center;
+    cursor: pointer;
+}
 .requerido {
     background: rgb(255, 231, 231);
     border: 1px solid red;
