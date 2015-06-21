@@ -1,8 +1,10 @@
 /* ----------------------------------------------------------------------------------------------------------------------------
  * ABOUT.......: Clase generica que permite conectarse a un EDM, en varías versiones de EF4, EF4SupportEF5 y EF5
  * CREADOR.....: Jorge L. Torres A.
- * ACTUALIACION: Se incorpora lectura de XML para info de sumarios en la documentación de propiedades del modelo EDM
- * ACTUALIZADO.: 18-06-2015 10:26PM
+ * ACTUALIACION: Se agregan class='sortable filterable" para que los listados trabajen con los JS sortTable.js y 
+ *               filterTable.js que permiten filtrar y ordenar la tabla, y se agrega id='listado' requerido por 
+ *               el script sortTable.js
+ * ACTUALIZADO.: 21-06-2015 10:26PM
  * CREADO......: 20-03-2015 11:53PM
  * ----------------------------------------------------------------------------------------------------------------------------- */
 using System;
@@ -443,7 +445,7 @@ namespace GenericRepository
             #endregion
             #region Region del Listado en tabla HTML, muestra todos los registros de la tabla
             _Panel.Controls.Add(new LiteralControl("<nav><h2>" + title + "</h2></nav>"));
-            _Panel.Controls.Add(new LiteralControl("<table class='table table-condensed table-striped'><thead><tr>"));
+            _Panel.Controls.Add(new LiteralControl("<table id='listado' class='table table-condensed table-striped filterable sortable'><thead><tr>"));
             #region ListadoHeader
             /* ----------------
              * Agregando encabezados de listado en una tabla de HTML
