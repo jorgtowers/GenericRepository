@@ -472,7 +472,7 @@ namespace GenericRepository
             {
                 string key = headers.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "").Replace("rbt", "");
                 if (key == "Id")
-                    _Panel.Controls.Add(new LiteralControl("<td>" + key + "</td>"));
+                    _Panel.Controls.Add(new LiteralControl("<td  class='unsortable'>" + key + "</td>"));
                 if (!key.Contains("Id"))
                 {
                     if (key.Substring(key.IndexOf("-") + 1).Length > 0)
