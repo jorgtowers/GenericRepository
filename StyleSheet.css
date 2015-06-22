@@ -4,11 +4,12 @@
  #editPanel {
     box-shadow: 0px 1px 6px;
     padding: 2em;
+    position:relative;
 }
 #closeEditPanel {
     position: absolute;
-    right: 18px;
-    top: 32px;
+    right: 5px;
+    top: 5px;
     border: 1px solid;
     padding: .4em;
     background: #d43f3a;
