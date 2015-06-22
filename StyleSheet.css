@@ -48,6 +48,7 @@
             margin-right: 1px;
             content: "";
             right: -32px;
+            z-index:-1;
         }
 
     .help .field {
