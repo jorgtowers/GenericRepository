@@ -1,12 +1,14 @@
 /* ----------------------------------------------------------------------------------------------------------------------------
  * ABOUT.......: Clase generica que permite conectarse a un EDM, en varías versiones de EF4, EF4SupportEF5 y EF5
  * CREADOR.....: Jorge L. Torres A.
- * ACTUALIACION: Se agregan class='sortable filterable" para que los listados trabajen con los JS sortTable.js y 
+ * ACTUALIACION: .- Se agregan class='sortable filterable" para que los listados trabajen con los JS sortTable.js y 
  *               filterTable.js que permiten filtrar y ordenar la tabla, y se agrega id='listado' requerido por 
- *               el script sortTable.js, se agrega propiedad a PageDynamic<T> que permite configuarar campos de 
+ *               el script sortTable.js
+ *               .- Se agrega propiedad a PageDynamic<T> que permite configuarar campos de 
  *               texto como Multilinea, para esto debe indicarse cuales campos separados por coma (,) en la 
  *               propiedad CamposTextoMultiLinea
- * ACTUALIZADO.: 21-06-2015 04:26PM
+ *               .- Se mejora redireccionamiento al precionar click sobre el boton limpiar
+ * ACTUALIZADO.: 24-06-2015 07:07PM
  * CREADO......: 20-03-2015 11:53PM
  * ----------------------------------------------------------------------------------------------------------------------------- */
 using System;
@@ -102,6 +104,7 @@ namespace GenericRepository
                     }
                 }
             }
+            /*
             Button btn = ((Button)sender);
             if (btn.Text == "Limpiar" || btn.Text == "Eliminar")
             {
@@ -111,6 +114,8 @@ namespace GenericRepository
             {
                 Response.Redirect(Request.Url.AbsoluteUri, false);
             }
+            */
+            Response.Redirect(Request.Url.AbsoluteUri.Substring(0, (Request.Url.AbsoluteUri.LastIndexOf("&id=") == -1 ? Request.Url.AbsoluteUri.Length - 5 : 0)));
         }
 
     }
@@ -869,6 +874,7 @@ namespace GenericRepository
                 ((CheckBox)chk).Checked = false;
             }
             RefreshListado();
+            /*
             Button btn = ((Button)sender);
             if (btn.Text == _NombreBotonLimpiar || btn.Text == _NombreBotonEliminar)
             {
@@ -878,6 +884,8 @@ namespace GenericRepository
             {
                 Response.Redirect(Request.Url.AbsoluteUri, false);
             }
+            */
+            Response.Redirect(Request.Url.AbsoluteUri.Substring(0, (Request.Url.AbsoluteUri.LastIndexOf("&id=") == -1 ? Request.Url.AbsoluteUri.Length - 5 : 0)));
         }
     }
 
