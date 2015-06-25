@@ -115,7 +115,11 @@ namespace GenericRepository
                 Response.Redirect(Request.Url.AbsoluteUri, false);
             }
             */
-            Response.Redirect(Request.Url.AbsoluteUri.Substring(0, (Request.Url.AbsoluteUri.LastIndexOf("&id=") == -1 ? Request.Url.AbsoluteUri.Length - 5 : 0)));
+            int urlCompleta = Request.Url.AbsoluteUri.Length;
+            bool tieneId = (Request.Url.AbsoluteUri.ToLower().LastIndexOf("&id=") == -1 ? false : true);
+            if (tieneId)
+                urlCompleta = urlCompleta - 5;
+            Response.Redirect(Request.Url.AbsoluteUri.Substring(0, urlCompleta));
         }
 
     }
@@ -885,7 +889,11 @@ namespace GenericRepository
                 Response.Redirect(Request.Url.AbsoluteUri, false);
             }
             */
-            Response.Redirect(Request.Url.AbsoluteUri.Substring(0, (Request.Url.AbsoluteUri.LastIndexOf("&id=") == -1 ? Request.Url.AbsoluteUri.Length - 5 : 0)));
+            int urlCompleta = Request.Url.AbsoluteUri.Length;
+            bool tieneId = (Request.Url.AbsoluteUri.ToLower().LastIndexOf("&id=") == -1 ? false : true);
+            if (tieneId)
+                urlCompleta = urlCompleta - 5;
+            Response.Redirect(Request.Url.AbsoluteUri.Substring(0, urlCompleta));
         }
     }
 
