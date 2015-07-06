@@ -8,6 +8,7 @@
  *               texto como Multilinea, para esto debe indicarse cuales campos separados por coma (,) en la 
  *               propiedad CamposTextoMultiLinea
  *               .- Se mejora redireccionamiento al precionar click sobre el boton limpiar
+ *               .- Mejora de método de Eliminar, ya no tiene que capturar el ObjectToUpdate de la pantalla
  * ACTUALIZADO.: 24-06-2015 07:07PM
  * CREADO......: 20-03-2015 11:53PM
  * ----------------------------------------------------------------------------------------------------------------------------- */
@@ -73,7 +74,8 @@ namespace GenericRepository
         {
             try
             {
-                model.Eliminar<T>(ObjectToUpdate);
+                _ObjectToUpdate = model.Obtener<T>(base.Id);
+                model.Eliminar<T>(_ObjectToUpdate);
                 Limpiar(sender, e);
                 _Resultado = "Registro eliminado satisfactoriamente...";
             }
@@ -837,8 +839,9 @@ namespace GenericRepository
         {
             try
             {
-                model.Eliminar<T>(this.ObjectToUpdate());
-
+                T _ObjectToUpdate = model.Obtener<T>(base.Id);
+                model.Eliminar<T>(_ObjectToUpdate); 
+                
                 _Resultado = "Registro eliminado satisfactoriamente...";
             }
             catch (Exception ex) { _Resultado = ex.Message; }
