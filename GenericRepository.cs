@@ -9,7 +9,7 @@
  *               propiedad CamposTextoMultiLinea
  *               .- Se mejora redireccionamiento al precionar click sobre el boton limpiar
  *               .- Mejora de método de Eliminar, ya no tiene que capturar el ObjectToUpdate de la pantalla
- * ACTUALIZADO.: 24-06-2015 07:07PM
+ * ACTUALIZADO.: 06-07-2015 11:16AM
  * CREADO......: 20-03-2015 11:53PM
  * ----------------------------------------------------------------------------------------------------------------------------- */
 using System;
