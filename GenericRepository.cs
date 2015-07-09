@@ -9,7 +9,8 @@
  *               propiedad CamposTextoMultiLinea
  *               .- Se mejora redireccionamiento al precionar click sobre el boton limpiar
  *               .- Mejora de método de Eliminar, ya no tiene que capturar el ObjectToUpdate de la pantalla
- * ACTUALIZADO.: 06-07-2015 11:16AM
+ *               .- Se agrega propiedad de Cantidad a PageDynamic<T> para filtrar el listado, por defecto traerá 100 registros
+ * ACTUALIZADO.: 09-07-2015 04:00PM
  * CREADO......: 20-03-2015 11:53PM
  * ----------------------------------------------------------------------------------------------------------------------------- */
 using System;
@@ -132,6 +133,15 @@ namespace GenericRepository
     [Information(Descripcion = "Clase especializada para la generación de páginas web apartir del nombre de una instancia, usando reflextion")]
     public abstract class PageDynamic<T> : AbstractPage where T : class, new()
     {
+        private int _Cantidad = 100;
+        /// <summary>
+        /// Cantidad de registros a retornar en el listado por defecto
+        /// </summary>
+        public int Cantidad
+        {
+            get { return _Cantidad; }
+            set { _Cantidad = value; }
+        }        
         /// <summary>
         /// Enumerativo que determinar la presentación usarán los datos de tipo Boolean
         /// </summary>
@@ -143,7 +153,7 @@ namespace GenericRepository
         public eBooleanAs BooleanAs
         {
             get { return _BooleanAs; }
-            set { _BooleanAs = value; }        
+            set { _BooleanAs = value; }
         }
         private string _CamposTextoMultiLinea = "texto";
         /// <summary>
@@ -367,10 +377,10 @@ namespace GenericRepository
                         TextBox t = new TextBox() { ID = "txt" + nombre.Replace(" ", ""), CssClass = "form-control" };
                         foreach (string item in _CamposTextoMultiLinea.ToLower().Split(','))
                         {
-                            if(nombre.ToLower()==item)
-                            t.TextMode = TextBoxMode.MultiLine;
+                            if (nombre.ToLower() == item)
+                                t.TextMode = TextBoxMode.MultiLine;
                         }
-                            
+
                         t.Attributes.Add("placeHolder", Utils.SplitCamelCase(nombre));
                         if (nombre == "Id")
                         {
@@ -499,7 +509,7 @@ namespace GenericRepository
             /* ----------------
              * Agregando cuerpo de listado en una tabla de HTML
              * ----------------*/
-            _Listado = model.Listado<T>().ToList();
+            _Listado = model.Listado<T>().Take(_Cantidad).ToList();
             foreach (T item in _Listado)
             {
                 _Panel.Controls.Add(new LiteralControl("<tr>"));
@@ -840,8 +850,8 @@ namespace GenericRepository
             try
             {
                 T _ObjectToUpdate = model.Obtener<T>(base.Id);
-                model.Eliminar<T>(_ObjectToUpdate); 
-                
+                model.Eliminar<T>(_ObjectToUpdate);
+
                 _Resultado = "Registro eliminado satisfactoriamente...";
             }
             catch (Exception ex) { _Resultado = ex.Message; }
