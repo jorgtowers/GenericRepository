@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------------------------------------------------------
- * ABOUT.......: Clase generica que permite conectarse a un EDM, en varías versiones de EF4, EF4SupportEF5 y EF5
+ * ABOUT.......: Clase generica que permite conectarse a un EDM, en varías versiones de EF4, EF4SupportEF5, EF5 y EF6
  * CREADOR.....: Jorge L. Torres A.
  * ACTUALIACION: .- Se agregan class='sortable filterable" para que los listados trabajen con los JS sortTable.js y 
  *               filterTable.js que permiten filtrar y ordenar la tabla, y se agrega id='listado' requerido por 
@@ -10,7 +10,9 @@
  *               .- Se mejora redireccionamiento al precionar click sobre el boton limpiar
  *               .- Mejora de método de Eliminar, ya no tiene que capturar el ObjectToUpdate de la pantalla
  *               .- Se agrega propiedad de Cantidad a PageDynamic<T> para filtrar el listado, por defecto traerá 100 registros
- * ACTUALIZADO.: 09-07-2015 04:00PM
+ *               03-08-2015 09:00PM .- Se agrera EF5.BulkInsertAll<T> que permite agregar grandes lotes de registros
+ *               03-08-2015 09:00PM .- Se agrera EF6.BulkInsertAll<T> que permite agregar grandes lotes de registros
+ * ACTUALIZADO.: 03-08-2015 09:00PM
  * CREADO......: 20-03-2015 11:53PM
  * ----------------------------------------------------------------------------------------------------------------------------- */
 using System;
@@ -32,6 +34,9 @@ using System.Data.Entity.Core.Objects;
 using System.Data.Entity.Core.Objects.DataClasses;
 using System.Web.UI.HtmlControls;
 using System.Xml.Linq;
+using System.Data.Metadata.Edm;
+using System.Text.RegularExpressions;
+using System.Data.SqlClient;
 
 namespace GenericRepository
 {
@@ -1637,7 +1642,293 @@ namespace GenericRepository
             {
                 _context.SaveChanges();
             }
+            /// <summary>
+            /// Inserción en Lote
+            /// </summary>
+            /// <typeparam name="T">Type de la entidad a insertar</typeparam>
+            /// <param name="entities">Arreglo de datos de tipo T</param>
+            public void BulkInsertAll<T>(T[] entities) where T : class
+            {
+                var conn = (SqlConnection)_context.Database.Connection;
+                conn.Open();
+                Type t = typeof(T);
+                _context.Set(t).ToString();
+                var objectContext = ((IObjectContextAdapter)_context).ObjectContext;
+                var workspace = objectContext.MetadataWorkspace;
+                var mappings = GetMappings(workspace, objectContext.DefaultContainerName, typeof(T).Name);
+
+                var tableName = GetTableName<T>();
+                var bulkCopy = new SqlBulkCopy(conn) { DestinationTableName = tableName };
+
+                // Foreign key relations show up as virtual declared 
+                // properties and we want to ignore these.
+                var properties = t.GetProperties().Where(p => !p.GetGetMethod().IsVirtual).ToArray();
+                var table = new DataTable();
+                foreach (var property in properties)
+                {
+                    Type propertyType = property.PropertyType;
+
+                    // Nullable properties need special treatment.
+                    if (propertyType.IsGenericType &&
+                        propertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
+                    {
+                        propertyType = Nullable.GetUnderlyingType(propertyType);
+                    }
+
+                    // Since we cannot trust the CLR type properties to be in the same order as
+                    // the table columns we use the SqlBulkCopy column mappings.
+                    table.Columns.Add(new DataColumn(property.Name, propertyType));
+                    var clrPropertyName = property.Name;
+                    var tableColumnName = mappings[property.Name];
+                    bulkCopy.ColumnMappings.Add(new SqlBulkCopyColumnMapping(clrPropertyName, tableColumnName));
+                }
+
+                // Add all our entities to our data table
+                foreach (var entity in entities)
+                {
+                    var e = entity;
+                    table.Rows.Add(properties.Select(property => GetPropertyValue(property.GetValue(e, null))).ToArray());
+                }
+
+                // send it to the server for bulk execution
+                bulkCopy.BulkCopyTimeout = 5 * 60;
+                bulkCopy.WriteToServer(table);
+
+                conn.Close();
+            }
+
+            private string GetTableName<T>() where T : class
+            {
+                var dbSet = _context.Set<T>();
+                var sql = dbSet.ToString();
+                var regex = new Regex(@"FROM (?<table>.*) AS");
+                var match = regex.Match(sql);
+                return match.Groups["table"].Value;
+            }
+
+            private object GetPropertyValue(object o)
+            {
+                if (o == null)
+                    return DBNull.Value;
+                return o;
+            }
+
+            private Dictionary<string, string> GetMappings(MetadataWorkspace workspace, string containerName, string entityName)
+            {
+                var mappings = new Dictionary<string, string>();
+                var storageMapping = workspace.GetItem<GlobalItem>(containerName, DataSpace.CSSpace);
+                dynamic entitySetMaps = storageMapping.GetType().InvokeMember(
+                    "EntitySetMaps",
+                    BindingFlags.GetProperty | BindingFlags.NonPublic | BindingFlags.Instance,
+                    null, storageMapping, null);
+
+                foreach (var entitySetMap in entitySetMaps)
+                {
+                    var typeMappings = GetArrayList("TypeMappings", entitySetMap);
+                    dynamic typeMapping = typeMappings[0];
+                    dynamic types = GetArrayList("Types", typeMapping);
+
+                    if (types[0].Name == entityName)
+                    {
+                        var fragments = GetArrayList("MappingFragments", typeMapping);
+                        var fragment = fragments[0];
+                        var properties = GetArrayList("AllProperties", fragment);
+                        foreach (var property in properties)
+                        {
+                            var edmProperty = GetProperty("EdmProperty", property);
+                            var columnProperty = GetProperty("ColumnProperty", property);
+                            mappings.Add(edmProperty.Name, columnProperty.Name);
+                        }
+                    }
+                }
+
+                return mappings;
+            }
+
+            private ArrayList GetArrayList(string property, object instance)
+            {
+                var type = instance.GetType();
+                var objects = (IEnumerable)type.InvokeMember(property, BindingFlags.GetProperty | BindingFlags.NonPublic | BindingFlags.Instance, null, instance, null);
+                var list = new ArrayList();
+                foreach (var o in objects)
+                {
+                    list.Add(o);
+                }
+                return list;
+            }
+
+            private dynamic GetProperty(string property, object instance)
+            {
+                var type = instance.GetType();
+                return type.InvokeMember(property, BindingFlags.GetProperty | BindingFlags.NonPublic | BindingFlags.Instance, null, instance, null);
+            }
+
+
+
         }
     }
+    namespace EF6 {
+        public partial class GenericRepository<TContext> where TContext : DbContext, new()
+        {
+            /// <summary>
+            /// Crea una nueva instancia del Contexto
+            /// </summary>
+            protected DbContext _context;
+            public GenericRepository()
+            {
+                _context = new TContext();
+            }
+            /// <summary>
+            /// Crea una nueva instancia del Contexto apartir de una instancia ya creada
+            /// </summary>
+            /// <param name="instanceOfDBContext">Instancia del DBContext ya creada</param>
+            public GenericRepository(DbContext instanceOfDBContext)
+            {
+                _context = instanceOfDBContext;
+            }
+            /// <summary>
+            /// Expone objecto Database del Contexto, para ejecutar metodos propios del contexto
+            /// .SqlQuery<T>(string sql);
+            /// .ExecuteSqlCommand(string sql,params object[] parameters)
+            /// </summary>
+            public Database DBContext
+            {
+                get
+                {
+                    return _context.Database;
+                }
+            }
+            /// <summary>
+            /// Instancia expuesta para hacer uso directo del contexto instanciado
+            /// </summary>
+            public DbContext model
+            {
+                get { return _context; }
+            }
+            /// <summary>
+            /// Inserción en Lote
+            /// </summary>
+            /// <typeparam name="T">Type de la entidad a insertar</typeparam>
+            /// <param name="entities">Arreglo de datos de tipo T</param>
+            public void BulkInsertAll<T>(T[] entities) where T : class
+            {
+                var conn = (SqlConnection)_context.Database.Connection;
 
+                conn.Open();
+
+                Type t = typeof(T);
+                _context.Set(t).ToString();
+                var objectContext = ((IObjectContextAdapter)this).ObjectContext;
+                var workspace = objectContext.MetadataWorkspace;
+                var mappings = GetMappings(workspace, objectContext.DefaultContainerName, typeof(T).Name);
+
+                var tableName = GetTableName<T>();
+                var bulkCopy = new SqlBulkCopy(conn) { DestinationTableName = tableName };
+
+                // Foreign key relations show up as virtual declared 
+                // properties and we want to ignore these.
+                var properties = t.GetProperties().Where(p => !p.GetGetMethod().IsVirtual).ToArray();
+                var table = new DataTable();
+                foreach (var property in properties)
+                {
+                    Type propertyType = property.PropertyType;
+
+                    // Nullable properties need special treatment.
+                    if (propertyType.IsGenericType &&
+                        propertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
+                    {
+                        propertyType = Nullable.GetUnderlyingType(propertyType);
+                    }
+
+                    // Since we cannot trust the CLR type properties to be in the same order as
+                    // the table columns we use the SqlBulkCopy column mappings.
+                    table.Columns.Add(new DataColumn(property.Name, propertyType));
+                    var clrPropertyName = property.Name;
+                    var tableColumnName = mappings[property.Name];
+                    bulkCopy.ColumnMappings.Add(new SqlBulkCopyColumnMapping(clrPropertyName, tableColumnName));
+                }
+
+                // Add all our entities to our data table
+                foreach (var entity in entities)
+                {
+                    var e = entity;
+                    table.Rows.Add(properties.Select(property => GetPropertyValue(property.GetValue(e, null))).ToArray());
+                }
+
+                // send it to the server for bulk execution
+                bulkCopy.BulkCopyTimeout = 5 * 60;
+                bulkCopy.WriteToServer(table);
+
+                conn.Close();
+            }
+
+            private string GetTableName<T>() where T : class
+            {
+                var dbSet = _context.Set<T>();
+                var sql = dbSet.ToString();
+                var regex = new Regex(@"FROM (?<table>.*) AS");
+                var match = regex.Match(sql);
+                return match.Groups["table"].Value;
+            }
+
+            private object GetPropertyValue(object o)
+            {
+                if (o == null)
+                    return DBNull.Value;
+                return o;
+            }
+
+            private Dictionary<string, string> GetMappings(MetadataWorkspace workspace, string containerName, string entityName)
+            {
+                var mappings = new Dictionary<string, string>();
+                var storageMapping = workspace.GetItem<GlobalItem>(containerName, DataSpace.CSSpace);
+                dynamic entitySetMaps = storageMapping.GetType().InvokeMember(
+                    "EntitySetMaps",
+                    BindingFlags.GetProperty | BindingFlags.Public | BindingFlags.Instance,
+                    null, storageMapping, null);
+
+                foreach (var entitySetMap in entitySetMaps)
+                {
+                    var typeMappings = GetArrayList("EntityTypeMappings", entitySetMap);
+                    dynamic typeMapping = typeMappings[0];
+                    dynamic types = GetArrayList("Types", typeMapping);
+
+                    if (types[0].Name == entityName)
+                    {
+                        var fragments = GetArrayList("MappingFragments", typeMapping);
+                        var fragment = fragments[0];
+                        var properties = GetArrayList("AllProperties", fragment);
+                        foreach (var property in properties)
+                        {
+                            var edmProperty = GetProperty("EdmProperty", property);
+                            var columnProperty = GetProperty("ColumnProperty", property);
+                            mappings.Add(edmProperty.Name, columnProperty.Name);
+                        }
+                    }
+                }
+
+                return mappings;
+            }
+
+            private ArrayList GetArrayList(string property, object instance)
+            {
+                var type = instance.GetType();
+                var objects = (IEnumerable)type.InvokeMember(
+                    property,
+                    BindingFlags.GetProperty | BindingFlags.Public | BindingFlags.Instance, null, instance, null);
+                var list = new ArrayList();
+                foreach (var o in objects)
+                {
+                    list.Add(o);
+                }
+                return list;
+            }
+
+            private dynamic GetProperty(string property, object instance)
+            {
+                var type = instance.GetType();
+                return type.InvokeMember(property, BindingFlags.GetProperty | BindingFlags.Public | BindingFlags.Instance, null, instance, null);
+            }
+        }
+    }
 }
