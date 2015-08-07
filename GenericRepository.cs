@@ -12,7 +12,8 @@
  *               .- Se agrega propiedad de Cantidad a PageDynamic<T> para filtrar el listado, por defecto traerá 100 registros
  *               03-08-2015 09:00PM .- Se agrera EF5.BulkInsertAll<T> que permite agregar grandes lotes de registros
  *               03-08-2015 09:00PM .- Se agrera EF6.BulkInsertAll<T> que permite agregar grandes lotes de registros
- * ACTUALIZADO.: 03-08-2015 09:00PM
+ *               07-08-2015 03:36PM .- Se agrega  Utils.CamelCase
+ * ACTUALIZADO.: 07-08-2015 03:36PM
  * CREADO......: 20-03-2015 11:53PM
  * ----------------------------------------------------------------------------------------------------------------------------- */
 using System;
@@ -966,6 +967,9 @@ namespace GenericRepository
         public static string SplitCamelCase(string input)
         {
             return System.Text.RegularExpressions.Regex.Replace(input, "([A-Z])", " $1", System.Text.RegularExpressions.RegexOptions.Compiled).Trim();
+        }
+        public static string CamelCase(string input) {
+            return input.Substring(0, 1).ToUpper() + input.Substring(1, input.Length - 1).ToLower();
         }
     }
 
