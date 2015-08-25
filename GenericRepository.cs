@@ -13,8 +13,10 @@
  *               03-08-2015 09:00PM .- Se agrera EF5.BulkInsertAll<T> que permite agregar grandes lotes de registros
  *               03-08-2015 09:00PM .- Se agrera EF6.BulkInsertAll<T> que permite agregar grandes lotes de registros
  *               07-08-2015 03:36PM .- Se agrega  Utils.CamelCase
- * ACTUALIZADO.: 07-08-2015 03:36PM
+ *               25-08-2015 11:21AM .- Se agrega permisología sobre acciones a las pantallas, tomado de la tabla RolPagina
+ *
  * CREADO......: 20-03-2015 11:53PM
+ * ACTUALIZADO.: 25-08-2015 11:21AM 
  * ----------------------------------------------------------------------------------------------------------------------------- */
 using System;
 using System.Collections.Generic;
@@ -139,7 +141,7 @@ namespace GenericRepository
     [Information(Descripcion = "Clase especializada para la generación de páginas web apartir del nombre de una instancia, usando reflextion")]
     public abstract class PageDynamic<T> : AbstractPage where T : class, new()
     {
-        private int _Cantidad = 100;
+        private int _Cantidad = 1000;
         /// <summary>
         /// Cantidad de registros a retornar en el listado por defecto
         /// </summary>
@@ -147,7 +149,7 @@ namespace GenericRepository
         {
             get { return _Cantidad; }
             set { _Cantidad = value; }
-        }        
+        }
         /// <summary>
         /// Enumerativo que determinar la presentación usarán los datos de tipo Boolean
         /// </summary>
@@ -267,6 +269,27 @@ namespace GenericRepository
                 ContentPlaceHolder cph = form.Controls.OfType<ContentPlaceHolder>().FirstOrDefault();
                 cph.Controls.Add(_Panel);
             }
+
+
+            /* ---------------------------------------------------
+             * Acciones y permisos del rol
+             * --------------------------------------------------- */
+            string urlActual = Request.Url.LocalPath;
+            RolPagina rolEnPagina = UsuarioActual.Rol.RolPagina.Where(x => x.Pagina.Ruta.ToLower() == urlActual.ToLower()).FirstOrDefault();
+            bool? puedeSeleccionar = null, puedeListar = null, puedeAgregar = null, puedeModificar = null, puedeEliminar = null;
+            if (rolEnPagina != null)
+            {
+                try
+                {
+                    puedeSeleccionar = rolEnPagina.Seleccionar;
+                    puedeListar = rolEnPagina.Listar;
+                    puedeAgregar = rolEnPagina.Agregar;
+                    puedeModificar = rolEnPagina.Modificar;
+                    puedeEliminar = rolEnPagina.Eliminar;
+                }
+                catch { }
+            }
+
 
             /* ---------------------------------------------------
              * Lectura del esamblado y de la documentación en XML
@@ -397,11 +420,11 @@ namespace GenericRepository
                         }
                         else
                             if (!nombre.Contains("Id"))
-                            {
-                                _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'><b>" + Utils.SplitCamelCase(nombre) + "</b><p>" + labelDescripcion + "</p></td><td>"));
-                                _Panel.Controls.Add(t);
-                                _Panel.Controls.Add(new LiteralControl("</td></tr>"));
-                            }
+                        {
+                            _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'><b>" + Utils.SplitCamelCase(nombre) + "</b><p>" + labelDescripcion + "</p></td><td>"));
+                            _Panel.Controls.Add(t);
+                            _Panel.Controls.Add(new LiteralControl("</td></tr>"));
+                        }
                     }
                     if (tipo == "Boolean")
                     {
@@ -445,7 +468,7 @@ namespace GenericRepository
 
                 //sb.AppendLine("<br>");
                 //Response.Write(sb.ToString());
-            #endregion
+                #endregion
             }
             _Panel.Controls.Add(new LiteralControl("<tr><td colspan='2'>"));
             Label lblEstatus = new Label() { ID = "lblEstatus" };
@@ -460,21 +483,36 @@ namespace GenericRepository
             Button btnEliminar = new Button() { ID = "btnEliminar", CssClass = "btn btn-danger", Text = _NombreBotonEliminar };
             btnEliminar.Attributes.Add("style", "position: absolute;  left:0");
             btnEliminar.Click += Eliminar;
-            if (base.Id < 1)
+            if (!puedeEliminar.HasValue || puedeEliminar.Value)
+            {
+                if (base.Id < 1)
+                    btnEliminar.Visible = false;
+            }
+            else
                 btnEliminar.Visible = false;
             _Panel.Controls.Add(btnEliminar);
 
             Button btnModificar = new Button() { ID = "btnModificar", CssClass = "btn btn-primary", Text = _NombreBotonModificar };
             btnModificar.Click += Modificar;
             btnModificar.OnClientClick = "return app.Utils.ValidarCampos('editPanel',true)";
-            if (base.Id < 1)
+            if (!puedeModificar.HasValue || puedeModificar.Value)
+            {
+                if (base.Id < 1)
+                    btnModificar.Visible = false;
+            }
+            else
                 btnModificar.Visible = false;
             _Panel.Controls.Add(btnModificar);
 
             Button btnAgregar = new Button() { ID = "btnAgregar", CssClass = "btn btn-success", Text = _NombreBotonAgregar };
             btnAgregar.Click += Agregar;
             btnAgregar.OnClientClick = "return app.Utils.ValidarCampos('editPanel',true)";
-            if (base.Id > 0)
+            if (!puedeAgregar.HasValue || puedeAgregar.Value)
+            {
+                if (base.Id > 0)
+                    btnAgregar.Visible = false;
+            }
+            else
                 btnAgregar.Visible = false;
             _Panel.Controls.Add(btnAgregar);
 
@@ -488,119 +526,127 @@ namespace GenericRepository
 
             #endregion
             #region Region del Listado en tabla HTML, muestra todos los registros de la tabla
-            _Panel.Controls.Add(new LiteralControl("<nav><h2>" + title + "</h2></nav>"));
-            _Panel.Controls.Add(new LiteralControl("<input id='filtro' class='form-control' placeholder='Buscar...'/>"));
-            _Panel.Controls.Add(new LiteralControl("<table id='listado' class='table table-condensed table-striped sortable filterable more'><thead><tr>"));
-            #region ListadoHeader
-            /* ----------------
-             * Agregando encabezados de listado en una tabla de HTML
-             * ----------------*/
-            foreach (KeyValuePair<string, string> headers in _Fields)
+            if (puedeListar.HasValue && puedeListar.Value)
             {
-                string key = headers.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "").Replace("rbt", "");
-                if (key == "Id")
-                    _Panel.Controls.Add(new LiteralControl("<td  class='unsortable'>" + key + "</td>"));
-                if (!key.Contains("Id"))
+                _Panel.Controls.Add(new LiteralControl("<nav><h2>" + title + "</h2></nav>"));
+                _Panel.Controls.Add(new LiteralControl("<input id='filtro' class='form-control' placeholder='Buscar...'/>"));
+                _Panel.Controls.Add(new LiteralControl("<table id='listado' class='table table-condensed table-striped sortable filterable more'><thead><tr>"));
+                #region ListadoHeader
+                /* ----------------
+                 * Agregando encabezados de listado en una tabla de HTML
+                 * ----------------*/
+                foreach (KeyValuePair<string, string> headers in _Fields)
                 {
-                    if (key.Substring(key.IndexOf("-") + 1).Length > 0)
-                        _Panel.Controls.Add(new LiteralControl("<td>" + Utils.SplitCamelCase(key.Replace("-", "")) + "</td>"));
-                    else
-                        _Panel.Controls.Add(new LiteralControl("<td>" + Utils.SplitCamelCase(key.Substring(0, key.IndexOf("-"))) + "</td>"));
-                }
-            }
-            #endregion
-            _Panel.Controls.Add(new LiteralControl("</tr></thead>"));
-            _Panel.Controls.Add(new LiteralControl("<tbody id='toPaginador'>"));
-            #region ListadoBody
-            /* ----------------
-             * Agregando cuerpo de listado en una tabla de HTML
-             * ----------------*/
-            _Listado = model.Listado<T>().Take(_Cantidad).ToList();
-            foreach (T item in _Listado)
-            {
-                _Panel.Controls.Add(new LiteralControl("<tr>"));
-                foreach (KeyValuePair<string, string> campo in _Fields)
-                {
-                    object resultado = null;
-                    string key = campo.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "").Replace("rbt", "");
-                    bool isDDL = campo.Key.Substring(0, 3) == "ddl";
-
-                    if (!isDDL)
+                    string key = headers.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "").Replace("rbt", "");
+                    if (key == "Id")
+                        _Panel.Controls.Add(new LiteralControl("<td  class='unsortable'>" + key + "</td>"));
+                    if (!key.Contains("Id"))
                     {
-                        Type tipoDePropiedad = Type.GetType("System." + campo.Value);
-                        PropertyInfo propiedad = item.GetType().GetProperty(key);
-                        resultado = propiedad.GetValue(item, null) != null ? propiedad.GetValue(item, null).ToString() : "";
-                    }
-                    else
-                    {
-                        object id = 0;
-
-                        Type tipoDePropiedad = Type.GetType("System." + campo.Value);
-
-                        PropertyInfo propiedad = null;
                         if (key.Substring(key.IndexOf("-") + 1).Length > 0)
+                            _Panel.Controls.Add(new LiteralControl("<td>" + Utils.SplitCamelCase(key.Replace("-", "")) + "</td>"));
+                        else
+                            _Panel.Controls.Add(new LiteralControl("<td>" + Utils.SplitCamelCase(key.Substring(0, key.IndexOf("-"))) + "</td>"));
+                    }
+                }
+                #endregion
+                _Panel.Controls.Add(new LiteralControl("</tr></thead>"));
+                _Panel.Controls.Add(new LiteralControl("<tbody id='toPaginador'>"));
+                #region ListadoBody
+                /* ----------------
+                 * Agregando cuerpo de listado en una tabla de HTML
+                 * ----------------*/
+                _Listado = model.Listado<T>().Take(_Cantidad).ToList();
+                foreach (T item in _Listado)
+                {
+                    _Panel.Controls.Add(new LiteralControl("<tr>"));
+                    foreach (KeyValuePair<string, string> campo in _Fields)
+                    {
+                        object resultado = null;
+                        string key = campo.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "").Replace("rbt", "");
+                        bool isDDL = campo.Key.Substring(0, 3) == "ddl";
+
+                        if (!isDDL)
                         {
-                            propiedad = item.GetType().GetProperty("Id" + key.Replace("-", ""));
-                            key = key.Substring(0, key.IndexOf("-"));
+                            Type tipoDePropiedad = Type.GetType("System." + campo.Value);
+                            PropertyInfo propiedad = item.GetType().GetProperty(key);
+                            resultado = propiedad.GetValue(item, null) != null ? propiedad.GetValue(item, null).ToString() : "";
                         }
                         else
                         {
-                            propiedad = item.GetType().GetProperty("Id" + key.Substring(0, key.IndexOf("-")));
-                            key = key.Replace("-", "");
-                        }
-                        /* ------------------------------------------------------------------------
-                         * Excpeción controlada al llenar ddlList de tablas relacionadas asi mismas
-                         * ------------------------------------------------------------------------ */
-                        try
-                        {
-                            id = propiedad.GetValue(item, null);
-                        }
-                        catch { id = 0; }
+                            object id = 0;
 
-                        Type clase = Type.GetType(TDynamic.Namespace + "." + key);
-                        DbSet setClase = null;
-                        if (clase != null)
-                        {
-                            setClase = model.model.Set(clase);
-                            object instancia = setClase.Find(id);
-                            try
+                            Type tipoDePropiedad = Type.GetType("System." + campo.Value);
+
+                            PropertyInfo propiedad = null;
+                            if (key.Substring(key.IndexOf("-") + 1).Length > 0)
                             {
-                                resultado = instancia.GetType().GetProperty("Descripcion").GetValue(instancia, null);
+                                propiedad = item.GetType().GetProperty("Id" + key.Replace("-", ""));
+                                key = key.Substring(0, key.IndexOf("-"));
                             }
-                            catch { resultado = ""; }
-                        }
-                    }
-                    if (key == "Id")
-                        _Panel.Controls.Add(new LiteralControl("<td><a href='?Id=" + (resultado != null ? resultado.ToString() : "") + "'><b class='fa fa-edit'></b></a></td>"));
-                    else
-                    {
-                        if (!key.Contains("Id"))
-                        {
-                            if (campo.Value != "Boolean")
-                                _Panel.Controls.Add(new LiteralControl("<td>" + (resultado != null ? resultado.ToString() : "") + "</td>"));
                             else
                             {
-                                switch (_BooleanAs)
-                                {
-                                    case eBooleanAs.RadioButton:
-                                        _Panel.Controls.Add(new LiteralControl("<td>" + (resultado != null ? (resultado.ToString() == "True" ? "Si" : "No") : "") + "</td>"));
-                                        break;
-                                    case eBooleanAs.CheckBox:
-                                        _Panel.Controls.Add(new LiteralControl("<td><input type='checkbox' " + (resultado != null ? (resultado.ToString() == "True" ? "checked" : "") : "") + "/></td>"));
-                                        break;
-                                    default:
-                                        break;
-                                }
+                                propiedad = item.GetType().GetProperty("Id" + key.Substring(0, key.IndexOf("-")));
+                                key = key.Replace("-", "");
+                            }
+                            /* ------------------------------------------------------------------------
+                             * Excpeción controlada al llenar ddlList de tablas relacionadas asi mismas
+                             * ------------------------------------------------------------------------ */
+                            try
+                            {
+                                id = propiedad.GetValue(item, null);
+                            }
+                            catch { id = 0; }
 
+                            Type clase = Type.GetType(TDynamic.Namespace + "." + key);
+                            DbSet setClase = null;
+                            if (clase != null)
+                            {
+                                setClase = model.model.Set(clase);
+                                object instancia = setClase.Find(id);
+                                try
+                                {
+                                    resultado = instancia.GetType().GetProperty("Descripcion").GetValue(instancia, null);
+                                }
+                                catch { resultado = ""; }
                             }
                         }
+                        if (key == "Id")
+                        {
+                            if (puedeSeleccionar.HasValue && puedeSeleccionar.Value)
+                                _Panel.Controls.Add(new LiteralControl("<td><a href='?Id=" + (resultado != null ? resultado.ToString() : "") + "'><b class='fa fa-edit'></b></a></td>"));
+                            else
+                                _Panel.Controls.Add(new LiteralControl("<td></td>"));
+                        }
+                        else
+                        {
+                            if (!key.Contains("Id"))
+                            {
+                                if (campo.Value != "Boolean")
+                                    _Panel.Controls.Add(new LiteralControl("<td>" + (resultado != null ? resultado.ToString() : "") + "</td>"));
+                                else
+                                {
+                                    switch (_BooleanAs)
+                                    {
+                                        case eBooleanAs.RadioButton:
+                                            _Panel.Controls.Add(new LiteralControl("<td>" + (resultado != null ? (resultado.ToString() == "True" ? "Si" : "No") : "") + "</td>"));
+                                            break;
+                                        case eBooleanAs.CheckBox:
+                                            _Panel.Controls.Add(new LiteralControl("<td><input type='checkbox' " + (resultado != null ? (resultado.ToString() == "True" ? "checked" : "") : "") + "/></td>"));
+                                            break;
+                                        default:
+                                            break;
+                                    }
+
+                                }
+                            }
+                        }
+
                     }
-
-                } _Panel.Controls.Add(new LiteralControl("</tr>"));
+                    _Panel.Controls.Add(new LiteralControl("</tr>"));
+                }
+                #endregion
+                _Panel.Controls.Add(new LiteralControl("</tbody></table>"));
             }
-            #endregion
-            _Panel.Controls.Add(new LiteralControl("</tbody></table>"));
-
             #endregion
 
         }
