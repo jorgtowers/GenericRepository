@@ -275,12 +275,17 @@ namespace GenericRepository
              * Acciones y permisos del rol
              * --------------------------------------------------- */
             string urlActual = Request.Url.LocalPath;
-            PaginaRol rolEnPagina = UsuarioActual.Rol.PaginaRol.Where(x => x.Pagina.Ruta.ToLower() == urlActual.ToLower()).FirstOrDefault();
-            bool? puedeSeleccionar = null, puedeListar = null, puedeAgregar = null, puedeModificar = null, puedeEliminar = null;
+
+            PaginaRol rolEnPagina = null;
+            try {
+                rolEnPagina = UsuarioActual.Rol.PaginaRol.Where(x => x.Pagina.Ruta.ToLower() == urlActual.ToLower()).FirstOrDefault();
+            } catch { }
+            bool? tieneAcceso = null, puedeSeleccionar = null, puedeListar = null, puedeAgregar = null, puedeModificar = null, puedeEliminar = null;
             if (rolEnPagina != null)
             {
                 try
                 {
+                    tieneAcceso = rolEnPagina.Acceso;
                     puedeSeleccionar = rolEnPagina.Seleccionar;
                     puedeListar = rolEnPagina.Listar;
                     puedeAgregar = rolEnPagina.Agregar;
@@ -289,6 +294,8 @@ namespace GenericRepository
                 }
                 catch { }
             }
+            else
+                tieneAcceso = false;
 
 
             /* ---------------------------------------------------
@@ -327,6 +334,9 @@ namespace GenericRepository
             #endregion
 
             base.OnInit(e);
+
+
+            if (!tieneAcceso.HasValue || tieneAcceso.Value) {          
 
             PropertyInfo[] propiedades = TDynamic.GetProperties();
 
@@ -647,8 +657,10 @@ namespace GenericRepository
                 #endregion
                 _Panel.Controls.Add(new LiteralControl("</tbody></table>"));
             }
-            #endregion
-
+                #endregion
+            }
+            else
+                _Panel.Controls.Add(new LiteralControl("<p>Disculpe los inconvenientes, ud no tiene acceso a esta página, contacte a su administrador...</p>"));
         }
         /// <summary>
         /// Obtiene una instancia para agregar, edición y/o eliminación de un elemento
