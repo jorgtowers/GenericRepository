@@ -275,7 +275,6 @@ namespace GenericRepository
              * Acciones y permisos del rol
              * --------------------------------------------------- */
             string urlActual = Request.Url.LocalPath;
-
             PaginaRol rolEnPagina = null;
             try {
                 rolEnPagina = UsuarioActual.Rol.PaginaRol.Where(x => x.Pagina.Ruta.ToLower() == urlActual.ToLower()).FirstOrDefault();
@@ -493,38 +492,46 @@ namespace GenericRepository
             Button btnEliminar = new Button() { ID = "btnEliminar", CssClass = "btn btn-danger", Text = _NombreBotonEliminar };
             btnEliminar.Attributes.Add("style", "position: absolute;  left:0");
             btnEliminar.Click += Eliminar;
-            if (!puedeEliminar.HasValue || puedeEliminar.Value)
-            {
-                if (base.Id < 1)
+                if ((puedeEliminar.HasValue && !puedeEliminar.Value) || base.Id < 1)
                     btnEliminar.Visible = false;
-            }
-            else
-                btnEliminar.Visible = false;
+                //if (!puedeEliminar.HasValue || puedeEliminar.Value)
+                //{
+                //    if (base.Id < 1)
+                //        btnEliminar.Visible = false;
+                //}
+                //else
+                //    btnEliminar.Visible = false;
+                if ((puedeEliminar.HasValue && !puedeEliminar.Value) || base.Id < 1)
+                    btnEliminar.Visible = false;
             _Panel.Controls.Add(btnEliminar);
 
             Button btnModificar = new Button() { ID = "btnModificar", CssClass = "btn btn-primary", Text = _NombreBotonModificar };
             btnModificar.Click += Modificar;
             btnModificar.OnClientClick = "return app.Utils.ValidarCampos('editPanel',true)";
-            if (!puedeModificar.HasValue || puedeModificar.Value)
-            {
-                if (base.Id < 1)
+                if ((puedeModificar.HasValue && !puedeModificar.Value) || base.Id < 1)
                     btnModificar.Visible = false;
-            }
-            else
-                btnModificar.Visible = false;
-            _Panel.Controls.Add(btnModificar);
+                //if (!puedeModificar.HasValue || puedeModificar.Value)
+                //{
+                //    if (base.Id < 1)
+                //        btnModificar.Visible = false;
+                //}
+                //else
+                //    btnModificar.Visible = false;
+                _Panel.Controls.Add(btnModificar);
 
             Button btnAgregar = new Button() { ID = "btnAgregar", CssClass = "btn btn-success", Text = _NombreBotonAgregar };
             btnAgregar.Click += Agregar;
             btnAgregar.OnClientClick = "return app.Utils.ValidarCampos('editPanel',true)";
-            if (!puedeAgregar.HasValue || puedeAgregar.Value)
-            {
-                if (base.Id > 0)
+                if ((puedeAgregar.HasValue && !puedeAgregar.Value) || base.Id > 0)
                     btnAgregar.Visible = false;
-            }
-            else
-                btnAgregar.Visible = false;
-            _Panel.Controls.Add(btnAgregar);
+                //if (!puedeAgregar.HasValue || puedeAgregar.Value)
+                //{
+                //    if (base.Id > 0)
+                //        btnAgregar.Visible = false;
+                //}
+                //else
+                //    btnAgregar.Visible = false;
+                _Panel.Controls.Add(btnAgregar);
 
             Button btnLimpiar = new Button() { ID = "btnLimpiar", CssClass = "btn btn-default", Text = _NombreBotonLimpiar };
             btnLimpiar.Click += Limpiar;
