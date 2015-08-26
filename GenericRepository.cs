@@ -13,7 +13,7 @@
  *               03-08-2015 09:00PM .- Se agrera EF5.BulkInsertAll<T> que permite agregar grandes lotes de registros
  *               03-08-2015 09:00PM .- Se agrera EF6.BulkInsertAll<T> que permite agregar grandes lotes de registros
  *               07-08-2015 03:36PM .- Se agrega  Utils.CamelCase
- *               25-08-2015 11:21AM .- Se agrega permisología sobre acciones a las pantallas, tomado de la tabla RolPagina
+ *               25-08-2015 07:45PM .- Se agrega permisología sobre acciones a las pantallas, tomado de la tabla RolPagina
  *
  * CREADO......: 20-03-2015 11:53PM
  * ACTUALIZADO.: 25-08-2015 11:21AM 
@@ -275,7 +275,7 @@ namespace GenericRepository
              * Acciones y permisos del rol
              * --------------------------------------------------- */
             string urlActual = Request.Url.LocalPath;
-            RolPagina rolEnPagina = UsuarioActual.Rol.RolPagina.Where(x => x.Pagina.Ruta.ToLower() == urlActual.ToLower()).FirstOrDefault();
+            PaginaRol rolEnPagina = UsuarioActual.Rol.PaginaRol.Where(x => x.Pagina.Ruta.ToLower() == urlActual.ToLower()).FirstOrDefault();
             bool? puedeSeleccionar = null, puedeListar = null, puedeAgregar = null, puedeModificar = null, puedeEliminar = null;
             if (rolEnPagina != null)
             {
@@ -526,7 +526,7 @@ namespace GenericRepository
 
             #endregion
             #region Region del Listado en tabla HTML, muestra todos los registros de la tabla
-            if (puedeListar.HasValue && puedeListar.Value)
+            if (!puedeListar.HasValue || puedeListar.Value)
             {
                 _Panel.Controls.Add(new LiteralControl("<nav><h2>" + title + "</h2></nav>"));
                 _Panel.Controls.Add(new LiteralControl("<input id='filtro' class='form-control' placeholder='Buscar...'/>"));
@@ -612,7 +612,7 @@ namespace GenericRepository
                         }
                         if (key == "Id")
                         {
-                            if (puedeSeleccionar.HasValue && puedeSeleccionar.Value)
+                            if (!puedeListar.HasValue || puedeSeleccionar.Value)
                                 _Panel.Controls.Add(new LiteralControl("<td><a href='?Id=" + (resultado != null ? resultado.ToString() : "") + "'><b class='fa fa-edit'></b></a></td>"));
                             else
                                 _Panel.Controls.Add(new LiteralControl("<td></td>"));
