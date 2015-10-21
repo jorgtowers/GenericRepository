@@ -548,7 +548,7 @@ namespace GenericRepository
             {
                 _Panel.Controls.Add(new LiteralControl("<nav><h2>" + title + "</h2></nav>"));
                 _Panel.Controls.Add(new LiteralControl("<input id='filtro' class='form-control' placeholder='Buscar...'/>"));
-                _Panel.Controls.Add(new LiteralControl("<table id='listado' class='table table-condensed table-striped sortable filterable more'><thead><tr>"));
+                _Panel.Controls.Add(new LiteralControl("<section class='gridContainer'><table id='listado' class='table table-condensed table-striped sortable filterable more'><thead><tr>"));
                 #region ListadoHeader
                 /* ----------------
                  * Agregando encabezados de listado en una tabla de HTML
@@ -663,7 +663,7 @@ namespace GenericRepository
                     _Panel.Controls.Add(new LiteralControl("</tr>"));
                 }
                 #endregion
-                _Panel.Controls.Add(new LiteralControl("</tbody></table>"));
+                _Panel.Controls.Add(new LiteralControl("</tbody></table></section>"));
             }
                 #endregion
             }
