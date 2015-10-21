@@ -14,9 +14,10 @@
  *               03-08-2015 09:00PM .- Se agrera EF6.BulkInsertAll<T> que permite agregar grandes lotes de registros
  *               07-08-2015 03:36PM .- Se agrega  Utils.CamelCase
  *               25-08-2015 07:45PM .- Se agrega permisología sobre acciones a las pantallas, tomado de la tabla RolPagina
+ *               21-10-2015 12:41PM .- Se incluye compatibilidad con los campos de tipo GUID
  *
  * CREADO......: 20-03-2015 11:53PM
- * ACTUALIZADO.: 25-08-2015 11:21AM 
+ * ACTUALIZADO.: 21-10-2015 12:41PM
  * ----------------------------------------------------------------------------------------------------------------------------- */
 using System;
 using System.Collections.Generic;
@@ -712,7 +713,10 @@ namespace GenericRepository
                     string key = par.Key;
                     key = par.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "").Replace("rbt", "");
                     Type.GetType("System." + par.Value);
-                    _.GetType().GetProperty(key).SetValue(_, Convert.ChangeType(txt.Text, Type.GetType("System." + par.Value)), null);
+                    if (par.Value == "Guid")
+                        _.GetType().GetProperty(key).SetValue(_, new Guid(txt.Text), null);
+                    else
+                        _.GetType().GetProperty(key).SetValue(_, Convert.ChangeType(txt.Text, Type.GetType("System." + par.Value)), null);
                 }
             }
             #endregion
