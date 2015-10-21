@@ -409,7 +409,7 @@ namespace GenericRepository
                     string labelDescripcion = "";
                     labelDescripcion = (sumarioPropiedad != null ? sumarioPropiedad.Value.Trim() : "");
 
-                    if (tipo == "String" || tipo == "Int32" || tipo == "DateTime" || tipo == "Decimal" || tipo == "Float")
+                    if (tipo == "String" || tipo == "Int32" || tipo == "DateTime" || tipo == "Decimal" || tipo == "Float" || tipo == "Guid")
                     {
                         _Fields.Add(new KeyValuePair<string, string>("txt" + nombre, tipo));
                         TextBox t = new TextBox() { ID = "txt" + nombre.Replace(" ", ""), CssClass = "form-control" };
@@ -428,7 +428,7 @@ namespace GenericRepository
                             _Panel.Controls.Add(new LiteralControl("</td></tr>"));
                         }
                         else
-                            if (!nombre.Contains("Id"))
+                            if (nombre.ToLower() == "userid" || !nombre.Contains("Id"))
                         {
                             _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'><b>" + Utils.SplitCamelCase(nombre) + "</b><p>" + labelDescripcion + "</p></td><td>"));
                             _Panel.Controls.Add(t);
