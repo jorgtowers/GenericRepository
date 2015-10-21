@@ -557,7 +557,7 @@ namespace GenericRepository
                     string key = headers.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "").Replace("rbt", "");
                     if (key == "Id")
                         _Panel.Controls.Add(new LiteralControl("<td  class='unsortable'>" + key + "</td>"));
-                    if (!key.Contains("Id"))
+                    if (key.ToLower() == "userid" || !key.Contains("Id"))
                     {
                         if (key.Substring(key.IndexOf("-") + 1).Length > 0)
                             _Panel.Controls.Add(new LiteralControl("<td>" + Utils.SplitCamelCase(key.Replace("-", "")) + "</td>"));
@@ -636,7 +636,7 @@ namespace GenericRepository
                         }
                         else
                         {
-                            if (!key.Contains("Id"))
+                            if (key.ToLower()=="userid" || !key.Contains("Id"))
                             {
                                 if (campo.Value != "Boolean")
                                     _Panel.Controls.Add(new LiteralControl("<td>" + (resultado != null ? resultado.ToString() : "") + "</td>"));
