@@ -1,23 +1,26 @@
 /* ----------------------------------------------------------------------------------------------------------------------------
  * ABOUT.......: Clase generica que permite conectarse a un EDM, en varías versiones de EF4, EF4SupportEF5, EF5 y EF6
  * CREADOR.....: Jorge L. Torres A.
- * ACTUALIACION: .- Se agregan class='sortable filterable" para que los listados trabajen con los JS sortTable.js y 
- *               filterTable.js que permiten filtrar y ordenar la tabla, y se agrega id='listado' requerido por 
- *               el script sortTable.js
- *               .- Se agrega propiedad a PageDynamic<T> que permite configuarar campos de 
- *               texto como Multilinea, para esto debe indicarse cuales campos separados por coma (,) en la 
- *               propiedad CamposTextoMultiLinea
- *               .- Se mejora redireccionamiento al precionar click sobre el boton limpiar
- *               .- Mejora de método de Eliminar, ya no tiene que capturar el ObjectToUpdate de la pantalla
- *               .- Se agrega propiedad de Cantidad a PageDynamic<T> para filtrar el listado, por defecto traerá 100 registros
+ * MEJORAS.....: 20-03-2015 11:53PM .- Se agregan class='sortable filterable" para que los listados trabajen con los JS sortTable.js y 
+ *                                     filterTable.js que permiten filtrar y ordenar la tabla, y se agrega id='listado' requerido por 
+ *                                     el script sortTable.js
+ *               20-03-2015 11:53PM .- Se agrega propiedad a PageDynamic<T> que permite configuarar campos de 
+ *                                     texto como Multilinea, para esto debe indicarse cuales campos separados por coma (,) en la 
+ *                                     propiedad CamposTextoMultiLinea
+ *               20-03-2015 11:53PM .- Se mejora redireccionamiento al precionar click sobre el boton limpiar
+ *               20-03-2015 11:53PM .- Mejora de método de Eliminar, ya no tiene que capturar el ObjectToUpdate de la pantalla
+ *               20-03-2015 11:53PM .- Se agrega propiedad de Cantidad a PageDynamic<T> para filtrar el listado, por defecto traerá 100 registros
  *               03-08-2015 09:00PM .- Se agrera EF5.BulkInsertAll<T> que permite agregar grandes lotes de registros
  *               03-08-2015 09:00PM .- Se agrera EF6.BulkInsertAll<T> que permite agregar grandes lotes de registros
  *               07-08-2015 03:36PM .- Se agrega  Utils.CamelCase
  *               25-08-2015 07:45PM .- Se agrega permisología sobre acciones a las pantallas, tomado de la tabla RolPagina
  *               21-10-2015 12:41PM .- Se incluye compatibilidad con los campos de tipo GUID
+ *               26-10-2015 02:33PM .- Se agrega propiedad TituloPagina para poder cambiarle el titulo generado por la clase 
+ *                                     de forma automatica, ppara cambiar se debe agregar hacer override OnInit(EventArgs e)
+ *                                     y agregar la propiedad TituloPagina="titulo deseado";
  *
  * CREADO......: 20-03-2015 11:53PM
- * ACTUALIZADO.: 21-10-2015 12:41PM
+ * ACTUALIZADO.: 26-10-2015 02:33PM
  * ----------------------------------------------------------------------------------------------------------------------------- */
 using System;
 using System.Collections.Generic;
@@ -209,6 +212,15 @@ namespace GenericRepository
             get { return _NombreBotonLimpiar; }
             set { _NombreBotonLimpiar = value; }
         }
+        private string _TituloPagina = string.Empty;
+        /// <summary>
+        /// Nombre que tendrá el titulo de la página, su valor por defecto está en blanco "String.Empty"
+        /// </summary>
+        public string TituloPagina
+        {
+            get { return TituloPagina; }
+            set { TituloPagina = value; }
+        }
         private Panel _Panel = null;
         /// <summary>
         /// Instancia del Panel que será usado para crear todos los elementos de la instancia del objeto recibido
@@ -330,7 +342,10 @@ namespace GenericRepository
                     title += TDynamic.Name + "s";
                     break;
             }
-            this.Page.Title = title;
+            if (string.IsNullOrEmpty(_TituloPagina))
+                this.Page.Title = title;
+            else
+                this.Page.Title = _TituloPagina;
             #endregion
 
             base.OnInit(e);
