@@ -218,8 +218,8 @@ namespace GenericRepository
         /// </summary>
         public string TituloPagina
         {
-            get { return TituloPagina; }
-            set { TituloPagina = value; }
+            get { return _TituloPagina; }
+            set { _TituloPagina = value; }
         }
         private Panel _Panel = null;
         /// <summary>
