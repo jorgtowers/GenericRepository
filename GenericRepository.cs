@@ -345,7 +345,10 @@ namespace GenericRepository
             if (string.IsNullOrEmpty(_TituloPagina))
                 this.Page.Title = title;
             else
+            {
                 this.Page.Title = _TituloPagina;
+                title = _TituloPagina;
+            }
             #endregion
 
             base.OnInit(e);
