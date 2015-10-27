@@ -18,9 +18,11 @@
  *               26-10-2015 02:33PM .- Se agrega propiedad TituloPagina para poder cambiarle el titulo generado por la clase 
  *                                     de forma automatica, ppara cambiar se debe agregar hacer override OnInit(EventArgs e)
  *                                     y agregar la propiedad TituloPagina="titulo deseado";
+ *               27-10-2015 04:17PM .- Se agrega opción para eButtonAs {Button, LinkButton} para generación de botones como enlaces
+ *                                     con la finalidad de agregar iconos de FontAwesome
  *
  * CREADO......: 20-03-2015 11:53PM
- * ACTUALIZADO.: 26-10-2015 02:33PM
+ * ACTUALIZADO.: 27-10-2015 04:17PM
  * ----------------------------------------------------------------------------------------------------------------------------- */
 using System;
 using System.Collections.Generic;
@@ -157,8 +159,12 @@ namespace GenericRepository
         /// <summary>
         /// Enumerativo que determinar la presentación usarán los datos de tipo Boolean
         /// </summary>
-        public enum eBooleanAs { RadioButton, CheckBox }
-        private eBooleanAs _BooleanAs = eBooleanAs.CheckBox;
+        public enum eBooleanAs { RadioButton, CheckBox,Toogle }
+        /// <summary>
+        /// Enumerativo que determinar la presentación usarán los botones de acciones para el CRUD
+        /// </summary>
+        public enum eButtonsAs { Button, LinkButton }
+        private eBooleanAs _BooleanAs = eBooleanAs.Toogle;
         /// <summary>
         /// Permite controlar la presentación que usarán los datos de tipo Boolean, por defecto se usará eBooleanAs.CheckBox
         /// </summary>
@@ -166,6 +172,15 @@ namespace GenericRepository
         {
             get { return _BooleanAs; }
             set { _BooleanAs = value; }
+        }
+        private eButtonsAs _ButtonAs = eButtonsAs.LinkButton;
+        /// <summary>
+        /// Permite controlar la presentación que usarán los botones de acciones para el CRUD, por defecto se usará eButtonsAs.LinkButton
+        /// </summary>
+        public eButtonsAs ButtonAs
+        {
+            get { return _ButtonAs; }
+            set { _ButtonAs = value; }
         }
         private string _CamposTextoMultiLinea = "texto";
         /// <summary>
@@ -176,27 +191,27 @@ namespace GenericRepository
             get { return _CamposTextoMultiLinea; }
             set { _CamposTextoMultiLinea = value; }
         }
-        private string _NombreBotonAgregar = "Agregar";
+        private string _NombreBotonAgregar = "Nuevo";
         /// <summary>
-        /// Nombre que tendrá el boton de btnAgregar, su valor por defecto es "Agregar"
+        /// Nombre que tendrá el boton de btnAgregar, su valor por defecto es "Nuevo"
         /// </summary>
         public string NombreBotonAgregar
         {
             get { return _NombreBotonAgregar; }
             set { _NombreBotonAgregar = value; }
         }
-        private string _NombreBotonModificar = "Modificar";
+        private string _NombreBotonModificar = "Guardar";
         /// <summary>
-        /// Nombre que tendrá el boton de btnModificar, su valor por defecto es "Modificar"
+        /// Nombre que tendrá el boton de btnModificar, su valor por defecto es "Guardar"
         /// </summary>
         public string NombreBotonModificar
         {
             get { return _NombreBotonModificar; }
             set { _NombreBotonModificar = value; }
         }
-        private string _NombreBotonEliminar = "Eliminar";
+        private string _NombreBotonEliminar = "Borrar";
         /// <summary>
-        /// Nombre que tendrá el boton de btnEliminar, su valor por defecto es "Eliminar"
+        /// Nombre que tendrá el boton de btnEliminar, su valor por defecto es "Borrar"
         /// </summary>
         public string NombreBotonEliminar
         {
@@ -508,53 +523,74 @@ namespace GenericRepository
              * Agregando botones de acciones a la página
              * ----------------*/
 
-            Button btnEliminar = new Button() { ID = "btnEliminar", CssClass = "btn btn-danger", Text = _NombreBotonEliminar };
-            btnEliminar.Attributes.Add("style", "position: absolute;  left:0");
-            btnEliminar.Click += Eliminar;
-                if ((puedeEliminar.HasValue && !puedeEliminar.Value) || base.Id < 1)
-                    btnEliminar.Visible = false;
-                //if (!puedeEliminar.HasValue || puedeEliminar.Value)
-                //{
-                //    if (base.Id < 1)
-                //        btnEliminar.Visible = false;
-                //}
-                //else
-                //    btnEliminar.Visible = false;
-                if ((puedeEliminar.HasValue && !puedeEliminar.Value) || base.Id < 1)
-                    btnEliminar.Visible = false;
-            _Panel.Controls.Add(btnEliminar);
+             switch (_ButtonAs)
+                {
+                    case eButtonsAs.Button:
+                        {
+                            Button btnEliminar = new Button() { ID = "btnEliminar", CssClass = "btn btn-danger", Text = _NombreBotonEliminar };
+                            btnEliminar.Attributes.Add("style", "position: absolute;  left:0");
+                            btnEliminar.Click += Eliminar;
+                            if ((puedeEliminar.HasValue && !puedeEliminar.Value) || base.Id < 1)
+                                btnEliminar.Visible = false;
 
-            Button btnModificar = new Button() { ID = "btnModificar", CssClass = "btn btn-primary", Text = _NombreBotonModificar };
-            btnModificar.Click += Modificar;
-            btnModificar.OnClientClick = "return app.Utils.ValidarCampos('editPanel',true)";
-                if ((puedeModificar.HasValue && !puedeModificar.Value) || base.Id < 1)
-                    btnModificar.Visible = false;
-                //if (!puedeModificar.HasValue || puedeModificar.Value)
-                //{
-                //    if (base.Id < 1)
-                //        btnModificar.Visible = false;
-                //}
-                //else
-                //    btnModificar.Visible = false;
-                _Panel.Controls.Add(btnModificar);
+                            if ((puedeEliminar.HasValue && !puedeEliminar.Value) || base.Id < 1)
+                                btnEliminar.Visible = false;
+                            _Panel.Controls.Add(btnEliminar);
 
-            Button btnAgregar = new Button() { ID = "btnAgregar", CssClass = "btn btn-success", Text = _NombreBotonAgregar };
-            btnAgregar.Click += Agregar;
-            btnAgregar.OnClientClick = "return app.Utils.ValidarCampos('editPanel',true)";
-                if ((puedeAgregar.HasValue && !puedeAgregar.Value) || base.Id > 0)
-                    btnAgregar.Visible = false;
-                //if (!puedeAgregar.HasValue || puedeAgregar.Value)
-                //{
-                //    if (base.Id > 0)
-                //        btnAgregar.Visible = false;
-                //}
-                //else
-                //    btnAgregar.Visible = false;
-                _Panel.Controls.Add(btnAgregar);
+                            Button btnModificar = new Button() { ID = "btnModificar", CssClass = "btn btn-primary", Text = _NombreBotonModificar };
+                            btnModificar.Click += Modificar;
+                            btnModificar.OnClientClick = "return app.Utils.ValidarCampos('editPanel',true)";
+                            if ((puedeModificar.HasValue && !puedeModificar.Value) || base.Id < 1)
+                                btnModificar.Visible = false;
 
-            Button btnLimpiar = new Button() { ID = "btnLimpiar", CssClass = "btn btn-default", Text = _NombreBotonLimpiar };
-            btnLimpiar.Click += Limpiar;
-            _Panel.Controls.Add(btnLimpiar);
+                            _Panel.Controls.Add(btnModificar);
+
+                            Button btnAgregar = new Button() { ID = "btnAgregar", CssClass = "btn btn-success", Text = _NombreBotonAgregar };
+                            btnAgregar.Click += Agregar;
+                            btnAgregar.OnClientClick = "return app.Utils.ValidarCampos('editPanel',true)";
+                            if ((puedeAgregar.HasValue && !puedeAgregar.Value) || base.Id > 0)
+                                btnAgregar.Visible = false;
+
+                            _Panel.Controls.Add(btnAgregar);
+
+                            Button btnLimpiar = new Button() { ID = "btnLimpiar", CssClass = "btn btn-default", Text = _NombreBotonLimpiar };
+                            btnLimpiar.Click += Limpiar;
+                            _Panel.Controls.Add(btnLimpiar);
+                            break;
+                        }
+                    case eButtonsAs.LinkButton:
+                        {
+                            LinkButton btnEliminar = new LinkButton() { ID = "btnEliminar", CssClass = "btn btn-danger", Text = "<b class='fa fa-times' ></b>&nbsp;" + _NombreBotonEliminar };
+                            btnEliminar.Attributes.Add("style", "position: absolute;  left:0");
+                            btnEliminar.Click += Eliminar;
+                            if ((puedeEliminar.HasValue && !puedeEliminar.Value) || base.Id < 1)
+                                btnEliminar.Visible = false;
+                            if ((puedeEliminar.HasValue && !puedeEliminar.Value) || base.Id < 1)
+                                btnEliminar.Visible = false;
+                            _Panel.Controls.Add(btnEliminar);
+
+                            LinkButton btnModificar = new LinkButton() { ID = "btnModificar", CssClass = "btn btn-primary", Text = "<b class='fa fa-save' ></b>&nbsp;" + _NombreBotonModificar };
+                            btnModificar.Click += Modificar;
+                            btnModificar.OnClientClick = "return app.Utils.ValidarCampos('editPanel',true)";
+                            if ((puedeModificar.HasValue && !puedeModificar.Value) || base.Id < 1)
+                                btnModificar.Visible = false;
+                            _Panel.Controls.Add(btnModificar);
+
+                            LinkButton btnAgregar = new LinkButton() { ID = "btnAgregar", CssClass = "btn btn-success", Text = "<b class='fa fa-plus-circle' ></b>&nbsp;" + _NombreBotonAgregar };
+                            btnAgregar.Click += Agregar;
+                            btnAgregar.OnClientClick = "return app.Utils.ValidarCampos('editPanel',true)";
+                            if ((puedeAgregar.HasValue && !puedeAgregar.Value) || base.Id > 0)
+                                btnAgregar.Visible = false;
+                            _Panel.Controls.Add(btnAgregar);
+
+                            LinkButton btnLimpiar = new LinkButton() { ID = "btnLimpiar", CssClass = "btn btn-default", Text =  _NombreBotonLimpiar };
+                            btnLimpiar.Click += Limpiar;
+                            _Panel.Controls.Add(btnLimpiar);
+                            break;
+                        }
+                    default:
+                        break;
+                }
 
             #endregion
             _Panel.Controls.Add(new LiteralControl("</td></tr>"));
