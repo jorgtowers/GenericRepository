@@ -55,11 +55,13 @@
         width: 75%;
     }
 
-
-
-
 /* ============================================================
-  Estilos para cambiar los checkbox por toogles
+  Cambiar estilos de checkbox por toogle, se debe agregar la 
+  clase:
+  class="cmn-toggle cmn-toggle-round" // para boton 3d
+  class="cmn-toggle cmn-toggle-round-flat" // para boton plano
+  class="cmn-toggle cmn-toggle-yes-no" // para si o no, y el label
+  <label for="cmn-toggle-yes-no" data-on="Yes" data-off="No"/>
 ============================================================ */
 
 .cmn-toggle {
