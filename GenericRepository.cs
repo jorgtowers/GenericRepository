@@ -1087,6 +1087,10 @@ namespace GenericRepository
                 return "ahora";
             return string.Empty;
         }
+        public static string Duracion(DateTime desde, DateTime hasta, bool hhmmss) {            
+            var diff = hasta.Subtract(desde);
+            return String.Format("{0}:{1}:{2}", diff.Hours.ToString().PadLeft(2,'0'), diff.Minutes.ToString().PadLeft(2, '0'), diff.Seconds.ToString().PadLeft(2, '0'));
+        }
         public static string SplitCamelCase(string input)
         {
             return System.Text.RegularExpressions.Regex.Replace(input, "([A-Z])", " $1", System.Text.RegularExpressions.RegexOptions.Compiled).Trim();
