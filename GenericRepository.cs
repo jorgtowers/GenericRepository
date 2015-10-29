@@ -371,159 +371,168 @@ namespace GenericRepository
 
             if (!tieneAcceso.HasValue || tieneAcceso.Value) {          
 
-            PropertyInfo[] propiedades = TDynamic.GetProperties();
+                PropertyInfo[] propiedades = TDynamic.GetProperties();
 
-            #region Region del Mantenimiento para hacer CRUD de los registros
-            _Panel.Controls.Add(new LiteralControl("<p onclick=app.Utils.Toogle('editPanel')><b class='fa fa-edit'></b>Presione clic o la tecla F9, para abrir panel de edición.</p><div id='editPanel' style='display: none'><span id='closeEditPanel' onclick=app.Utils.Toogle('editPanel')><b class='fa fa-times'></b></span>"));
-            _Panel.Controls.Add(new LiteralControl("<nav><h4>Gestión de datos</h4></nav>"));
-            _Panel.Controls.Add(new LiteralControl("<table class='table'><tbody>"));
-            #region Campos para Agregar y/o Editar la información de los registros seleccionados o por crear
+                #region Region del Mantenimiento para hacer CRUD de los registros
+                _Panel.Controls.Add(new LiteralControl("<p onclick=app.Utils.Toogle('editPanel')><b class='fa fa-edit'></b>Presione clic o la tecla F9, para abrir panel de edición.</p><div id='editPanel' style='display: none'><span id='closeEditPanel' onclick=app.Utils.Toogle('editPanel')><b class='fa fa-times'></b></span>"));
+                _Panel.Controls.Add(new LiteralControl("<nav><h4>Gestión de datos</h4></nav>"));
+                _Panel.Controls.Add(new LiteralControl("<table class='table'><tbody>"));
+                #region Campos para Agregar y/o Editar la información de los registros seleccionados o por crear
 
-            foreach (PropertyInfo propiedad in propiedades)
-            {
-                string tipo = "";
-                string nombre = "";
-                if (propiedad.PropertyType.GetGenericArguments().Count() > 0)
+                foreach (PropertyInfo propiedad in propiedades)
                 {
-                    tipo = propiedad.PropertyType.GetGenericArguments()[0].Name;
-                }
-                else
-                {
-                    tipo = propiedad.PropertyType.Name;
-                }
-                /* ----------------
-                 * Agregando campos de texto y/o checkbox a la pagina
-                 * ----------------*/
-                if (TDynamic.Namespace == propiedad.PropertyType.Namespace)
-                {
-                    nombre = propiedad.PropertyType.Name;
-                    var sumarioPropiedad = sumarios.Where(x => x.LastAttribute.Value.Contains(TDynamic.FullName + "." + nombre)).FirstOrDefault();
-
-
-                    _Fields.Add(new KeyValuePair<string, string>("ddl" + nombre + "-" + propiedad.Name.Replace(nombre, ""), "Int32"));
-                    _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'><b>" + Utils.SplitCamelCase(propiedad.Name) + "</b><p>" + (sumarioPropiedad != null ? sumarioPropiedad.Value.Trim() : "") + "</p></td><td>"));
-                    Type clase = Type.GetType(propiedad.PropertyType.Namespace + "." + nombre);
-
-                    IDescripcionId obj = (IDescripcionId)Activator.CreateInstance(clase);
-                    //obj.Descripcion = "( -- Seleccionar -- )";
-                    obj.Descripcion = "( -- Seleccione un item de " + clase.Name + " -- )";
-                    obj.Id = -1;
-
-                    DbSet setClase = null;
-                    if (clase != null)
+                    string tipo = "";
+                    string nombre = "";
+                    if (propiedad.PropertyType.GetGenericArguments().Count() > 0)
                     {
-                        setClase = model.model.Set(clase);
-                        setClase.Load();
+                        tipo = propiedad.PropertyType.GetGenericArguments()[0].Name;
                     }
-                    DropDownList t = new DropDownList()
+                    else
                     {
-                        ID = "ddl" + nombre + "-" + propiedad.Name.Replace(nombre, ""),
-                        DataTextField = "Descripcion",
-                        DataValueField = "Id",
-                        CssClass = "form-control"
-                    };
-
-                    IList<IDescripcionId> listado = setClase != null ? setClase.Local.Cast<IDescripcionId>().ToList() : null;
-                    listado.Add(obj);
-
-                    t.DataSource = listado.OrderBy(x => x.Descripcion);
-                    t.DataBind();
-
-                    _Panel.Controls.Add(t);
-                    _Panel.Controls.Add(new LiteralControl("</td></tr>"));
-                }
-
-                if (propiedad.PropertyType.Namespace == "System")
-                {
-                    nombre = propiedad.Name;
-                    var sumarioPropiedad = sumarios.Where(x => x.LastAttribute.Value.Contains(TDynamic.FullName + "." + nombre)).FirstOrDefault();
+                        tipo = propiedad.PropertyType.Name;
+                    }
                     /* ----------------
-                     * Leyendo la Descripcion de la clase Info:System.Attribute
+                     * Agregando campos de texto y/o checkbox a la pagina
                      * ----------------*/
-                    string labelDescripcion = "";
-                    labelDescripcion = (sumarioPropiedad != null ? sumarioPropiedad.Value.Trim() : "");
-
-                    if (tipo == "String" || tipo == "Int32" || tipo == "DateTime" || tipo == "Decimal" || tipo == "Float" || tipo == "Guid")
+                    if (TDynamic.Namespace == propiedad.PropertyType.Namespace)
                     {
-                        _Fields.Add(new KeyValuePair<string, string>("txt" + nombre, tipo));
-                        TextBox t = new TextBox() { ID = "txt" + nombre.Replace(" ", ""), CssClass = "form-control" };
-                        foreach (string item in _CamposTextoMultiLinea.ToLower().Split(','))
-                        {
-                            if (nombre.ToLower() == item)
-                                t.TextMode = TextBoxMode.MultiLine;
-                        }
+                        nombre = propiedad.PropertyType.Name;
+                        var sumarioPropiedad = sumarios.Where(x => x.LastAttribute.Value.Contains(TDynamic.FullName + "." + nombre)).FirstOrDefault();
 
-                        t.Attributes.Add("placeHolder", Utils.SplitCamelCase(nombre));
-                        if (nombre == "Id")
+
+                        _Fields.Add(new KeyValuePair<string, string>("ddl" + nombre + "-" + propiedad.Name.Replace(nombre, ""), "Int32"));
+                        _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'><b>" + Utils.SplitCamelCase(propiedad.Name) + "</b><p>" + (sumarioPropiedad != null ? sumarioPropiedad.Value.Trim() : "") + "</p></td><td>"));
+                        Type clase = Type.GetType(propiedad.PropertyType.Namespace + "." + nombre);
+
+                        IDescripcionId obj = (IDescripcionId)Activator.CreateInstance(clase);
+                        //obj.Descripcion = "( -- Seleccionar -- )";
+                        obj.Descripcion = "( -- Seleccione un item de " + clase.Name + " -- )";
+                        obj.Id = -1;
+
+                        DbSet setClase = null;
+                        if (clase != null)
                         {
-                            _Panel.Controls.Add(new LiteralControl("<tr class='help' style='display:none'><td  class='info'><b>" + Utils.SplitCamelCase(nombre) + "</b><p>" + labelDescripcion + "</p></td><td>"));
-                            t.Enabled = false;
-                            _Panel.Controls.Add(t);
-                            _Panel.Controls.Add(new LiteralControl("</td></tr>"));
+                            setClase = model.model.Set(clase);
+                            setClase.Load();
                         }
-                        else
-                            if (nombre.ToLower() == "userid" || !nombre.Contains("Id"))
+                        DropDownList t = new DropDownList()
                         {
-                            _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'><b>" + Utils.SplitCamelCase(nombre) + "</b><p>" + labelDescripcion + "</p></td><td>"));
-                            _Panel.Controls.Add(t);
-                            _Panel.Controls.Add(new LiteralControl("</td></tr>"));
-                        }
+                            ID = "ddl" + nombre + "-" + propiedad.Name.Replace(nombre, ""),
+                            DataTextField = "Descripcion",
+                            DataValueField = "Id",
+                            CssClass = "form-control"
+                        };
+
+                        IList<IDescripcionId> listado = setClase != null ? setClase.Local.Cast<IDescripcionId>().ToList() : null;
+                        listado.Add(obj);
+
+                        t.DataSource = listado.OrderBy(x => x.Descripcion);
+                        t.DataBind();
+
+                        _Panel.Controls.Add(t);
+                        _Panel.Controls.Add(new LiteralControl("</td></tr>"));
                     }
-                    if (tipo == "Boolean")
+
+                    if (propiedad.PropertyType.Namespace == "System")
                     {
+                        nombre = propiedad.Name;
+                        var sumarioPropiedad = sumarios.Where(x => x.LastAttribute.Value.Contains(TDynamic.FullName + "." + nombre)).FirstOrDefault();
                         /* ----------------
-                         * Evalua enumerativo "eBooleanAs" para determinar que presentación usarán los datos de tipo Boolean, por defecto se usará eBooleanAs.CheckBox
+                         * Leyendo la Descripcion de la clase Info:System.Attribute
                          * ----------------*/
-                        switch (_BooleanAs)
+                        string labelDescripcion = "";
+                        labelDescripcion = (sumarioPropiedad != null ? sumarioPropiedad.Value.Trim() : "");
+
+                        if (tipo == "String" || tipo == "Int32" || tipo == "DateTime" || tipo == "Decimal" || tipo == "Float" || tipo == "Guid")
                         {
-                            case eBooleanAs.RadioButton:
-                                {
-                                    _Fields.Add(new KeyValuePair<string, string>("rbt" + nombre, tipo));
-                                    _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'><b>" + Utils.SplitCamelCase(nombre) + "</b><p>" + labelDescripcion + "</p></td><td>"));
-                                    RadioButton t = new RadioButton() { GroupName = "rbt" + nombre.Replace(" ", ""), Text = "Si" };
-                                    _Panel.Controls.Add(t);
-                                    t = new RadioButton() { GroupName = "rbt" + nombre.Replace(" ", ""), Text = "No" };
-                                    _Panel.Controls.Add(t);
-                                    _Panel.Controls.Add(new LiteralControl("</td></tr>"));
-                                    break;
-                                }
-                            case eBooleanAs.CheckBox:
-                                {
-                                    _Fields.Add(new KeyValuePair<string, string>("chk" + nombre, tipo));
-                                    _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'><b>" + Utils.SplitCamelCase(nombre) + "</b><p>" + labelDescripcion + "</p></td><td>"));
-                                    CheckBox t = new CheckBox() { ID = "chk" + nombre.Replace(" ", "") };
-                                    _Panel.Controls.Add(t);
-                                    _Panel.Controls.Add(new LiteralControl("</td></tr>"));
-                                    break;
-                                }
-                            default:
-                                break;
+                            _Fields.Add(new KeyValuePair<string, string>("txt" + nombre, tipo));
+                            TextBox t = new TextBox() { ID = "txt" + nombre.Replace(" ", ""), CssClass = "form-control" };
+                            foreach (string item in _CamposTextoMultiLinea.ToLower().Split(','))
+                            {
+                                if (nombre.ToLower() == item)
+                                    t.TextMode = TextBoxMode.MultiLine;
+                            }
+
+                            t.Attributes.Add("placeHolder", Utils.SplitCamelCase(nombre));
+                            if (nombre == "Id")
+                            {
+                                _Panel.Controls.Add(new LiteralControl("<tr class='help' style='display:none'><td  class='info'><b>" + Utils.SplitCamelCase(nombre) + "</b><p>" + labelDescripcion + "</p></td><td>"));
+                                t.Enabled = false;
+                                _Panel.Controls.Add(t);
+                                _Panel.Controls.Add(new LiteralControl("</td></tr>"));
+                            }
+                            else
+                                if (nombre.ToLower() == "userid" || !nombre.Contains("Id"))
+                            {
+                                _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'><b>" + Utils.SplitCamelCase(nombre) + "</b><p>" + labelDescripcion + "</p></td><td>"));
+                                _Panel.Controls.Add(t);
+                                _Panel.Controls.Add(new LiteralControl("</td></tr>"));
+                            }
                         }
+                        if (tipo == "Boolean")
+                        {
+                            /* ----------------
+                             * Evalua enumerativo "eBooleanAs" para determinar que presentación usarán los datos de tipo Boolean, por defecto se usará eBooleanAs.CheckBox
+                             * ----------------*/
+                            switch (_BooleanAs)
+                            {
+                                case eBooleanAs.RadioButton:
+                                    {
+                                        _Fields.Add(new KeyValuePair<string, string>("rbt" + nombre, tipo));
+                                        _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'><b>" + Utils.SplitCamelCase(nombre) + "</b><p>" + labelDescripcion + "</p></td><td>"));
+                                        RadioButton t = new RadioButton() { GroupName = "rbt" + nombre.Replace(" ", ""), Text = "Si" };
+                                        _Panel.Controls.Add(t);
+                                        t = new RadioButton() { GroupName = "rbt" + nombre.Replace(" ", ""), Text = "No" };
+                                        _Panel.Controls.Add(t);
+                                        _Panel.Controls.Add(new LiteralControl("</td></tr>"));
+                                        break;
+                                    }
+                                case eBooleanAs.CheckBox:
+                                    {
+                                        _Fields.Add(new KeyValuePair<string, string>("chk" + nombre, tipo));
+                                        _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'><b>" + Utils.SplitCamelCase(nombre) + "</b><p>" + labelDescripcion + "</p></td><td>"));
+                                        CheckBox t = new CheckBox() { ID = "chk" + nombre.Replace(" ", "") };
+                                        _Panel.Controls.Add(t);
+                                        _Panel.Controls.Add(new LiteralControl("</td></tr>"));
+                                        break;
+                                    }
+                                case eBooleanAs.Toogle:
+                                    {
+                                        _Fields.Add(new KeyValuePair<string, string>("chk" + nombre, tipo));
+                                        _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'><b>" + Utils.SplitCamelCase(nombre) + "</b><p>" + labelDescripcion + "</p></td><td>"));
+                                        CheckBox t = new CheckBox() { ID = "chk" + nombre.Replace(" ", "") };
+                                        _Panel.Controls.Add(t);
+                                        _Panel.Controls.Add(new LiteralControl("</td></tr>"));
+                                        break;
+                                    }
+                                default:
+                                    break;
+                            }
+                        }
+
+
+
                     }
+                    //if (TDynamic.Namespace == propiedad.PropertyType.Namespace)
+                    //    sb.AppendLine("<b>Objeto Nombre:</b>" + propiedad.Name);
+                    //if (propiedad.PropertyType.Namespace == "System.Collections.Generic")
+                    //    sb.AppendLine("<b>Lista Nombre:</b>" + propiedad.Name);
 
-
-
+                    //sb.AppendLine("<br>");
+                    //Response.Write(sb.ToString());
+                    #endregion
                 }
-                //if (TDynamic.Namespace == propiedad.PropertyType.Namespace)
-                //    sb.AppendLine("<b>Objeto Nombre:</b>" + propiedad.Name);
-                //if (propiedad.PropertyType.Namespace == "System.Collections.Generic")
-                //    sb.AppendLine("<b>Lista Nombre:</b>" + propiedad.Name);
+                _Panel.Controls.Add(new LiteralControl("<tr><td colspan='2'>"));
+                Label lblEstatus = new Label() { ID = "lblEstatus" };
+                _Panel.Controls.Add(lblEstatus);
+                _Panel.Controls.Add(new LiteralControl("</td></tr>"));
+                _Panel.Controls.Add(new LiteralControl("<tr><td colspan='2' style='text-align: right;position:relative'>"));
+                #region Botones de accion para Agregar, Modificar, Eliminar y/o Cancelar
+                /* ----------------
+                 * Agregando botones de acciones a la página
+                 * ----------------*/
 
-                //sb.AppendLine("<br>");
-                //Response.Write(sb.ToString());
-                #endregion
-            }
-            _Panel.Controls.Add(new LiteralControl("<tr><td colspan='2'>"));
-            Label lblEstatus = new Label() { ID = "lblEstatus" };
-            _Panel.Controls.Add(lblEstatus);
-            _Panel.Controls.Add(new LiteralControl("</td></tr>"));
-            _Panel.Controls.Add(new LiteralControl("<tr><td colspan='2' style='text-align: right;position:relative'>"));
-            #region Botones de accion para Agregar, Modificar, Eliminar y/o Cancelar
-            /* ----------------
-             * Agregando botones de acciones a la página
-             * ----------------*/
-
-             switch (_ButtonAs)
+                switch (_ButtonAs)
                 {
                     case eButtonsAs.Button:
                         {
@@ -583,7 +592,7 @@ namespace GenericRepository
                                 btnAgregar.Visible = false;
                             _Panel.Controls.Add(btnAgregar);
 
-                            LinkButton btnLimpiar = new LinkButton() { ID = "btnLimpiar", CssClass = "btn btn-default", Text =  _NombreBotonLimpiar };
+                            LinkButton btnLimpiar = new LinkButton() { ID = "btnLimpiar", CssClass = "btn btn-default", Text = _NombreBotonLimpiar };
                             btnLimpiar.Click += Limpiar;
                             _Panel.Controls.Add(btnLimpiar);
                             break;
@@ -592,133 +601,136 @@ namespace GenericRepository
                         break;
                 }
 
-            #endregion
-            _Panel.Controls.Add(new LiteralControl("</td></tr>"));
-            _Panel.Controls.Add(new LiteralControl("</tbody></table></div>"));
-
-            #endregion
-            #region Region del Listado en tabla HTML, muestra todos los registros de la tabla
-            if (!puedeListar.HasValue || puedeListar.Value)
-            {
-                _Panel.Controls.Add(new LiteralControl("<nav><h2>" + title + "</h2></nav>"));
-                _Panel.Controls.Add(new LiteralControl("<input id='filtro' class='form-control' placeholder='Buscar...'/>"));
-                _Panel.Controls.Add(new LiteralControl("<section class='gridContainer'><table id='listado' class='table table-condensed table-striped sortable filterable more'><thead><tr>"));
-                #region ListadoHeader
-                /* ----------------
-                 * Agregando encabezados de listado en una tabla de HTML
-                 * ----------------*/
-                foreach (KeyValuePair<string, string> headers in _Fields)
-                {
-                    string key = headers.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "").Replace("rbt", "");
-                    if (key == "Id")
-                        _Panel.Controls.Add(new LiteralControl("<td  class='unsortable'>" + key + "</td>"));
-                    if (key.ToLower() == "userid" || !key.Contains("Id"))
-                    {
-                        if (key.Substring(key.IndexOf("-") + 1).Length > 0)
-                            _Panel.Controls.Add(new LiteralControl("<td>" + Utils.SplitCamelCase(key.Replace("-", "")) + "</td>"));
-                        else
-                            _Panel.Controls.Add(new LiteralControl("<td>" + Utils.SplitCamelCase(key.Substring(0, key.IndexOf("-"))) + "</td>"));
-                    }
-                }
                 #endregion
-                _Panel.Controls.Add(new LiteralControl("</tr></thead>"));
-                _Panel.Controls.Add(new LiteralControl("<tbody id='toPaginador'>"));
-                #region ListadoBody
-                /* ----------------
-                 * Agregando cuerpo de listado en una tabla de HTML
-                 * ----------------*/
-                _Listado = model.Listado<T>().Take(_Cantidad).ToList();
-                foreach (T item in _Listado)
+                _Panel.Controls.Add(new LiteralControl("</td></tr>"));
+                _Panel.Controls.Add(new LiteralControl("</tbody></table></div>"));
+
+                #endregion
+                #region Region del Listado en tabla HTML, muestra todos los registros de la tabla
+                if (!puedeListar.HasValue || puedeListar.Value)
                 {
-                    _Panel.Controls.Add(new LiteralControl("<tr>"));
-                    foreach (KeyValuePair<string, string> campo in _Fields)
+                    _Panel.Controls.Add(new LiteralControl("<nav><h2>" + title + "</h2></nav>"));
+                    _Panel.Controls.Add(new LiteralControl("<input id='filtro' class='form-control' placeholder='Buscar...'/>"));
+                    _Panel.Controls.Add(new LiteralControl("<section class='gridContainer'><table id='listado' class='table table-condensed table-striped sortable filterable more'><thead><tr>"));
+                    #region ListadoHeader
+                    /* ----------------
+                     * Agregando encabezados de listado en una tabla de HTML
+                     * ----------------*/
+                    foreach (KeyValuePair<string, string> headers in _Fields)
                     {
-                        object resultado = null;
-                        string key = campo.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "").Replace("rbt", "");
-                        bool isDDL = campo.Key.Substring(0, 3) == "ddl";
-
-                        if (!isDDL)
-                        {
-                            Type tipoDePropiedad = Type.GetType("System." + campo.Value);
-                            PropertyInfo propiedad = item.GetType().GetProperty(key);
-                            resultado = propiedad.GetValue(item, null) != null ? propiedad.GetValue(item, null).ToString() : "";
-                        }
-                        else
-                        {
-                            object id = 0;
-
-                            Type tipoDePropiedad = Type.GetType("System." + campo.Value);
-
-                            PropertyInfo propiedad = null;
-                            if (key.Substring(key.IndexOf("-") + 1).Length > 0)
-                            {
-                                propiedad = item.GetType().GetProperty("Id" + key.Replace("-", ""));
-                                key = key.Substring(0, key.IndexOf("-"));
-                            }
-                            else
-                            {
-                                propiedad = item.GetType().GetProperty("Id" + key.Substring(0, key.IndexOf("-")));
-                                key = key.Replace("-", "");
-                            }
-                            /* ------------------------------------------------------------------------
-                             * Excpeción controlada al llenar ddlList de tablas relacionadas asi mismas
-                             * ------------------------------------------------------------------------ */
-                            try
-                            {
-                                id = propiedad.GetValue(item, null);
-                            }
-                            catch { id = 0; }
-
-                            Type clase = Type.GetType(TDynamic.Namespace + "." + key);
-                            DbSet setClase = null;
-                            if (clase != null)
-                            {
-                                setClase = model.model.Set(clase);
-                                object instancia = setClase.Find(id);
-                                try
-                                {
-                                    resultado = instancia.GetType().GetProperty("Descripcion").GetValue(instancia, null);
-                                }
-                                catch { resultado = ""; }
-                            }
-                        }
+                        string key = headers.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "").Replace("rbt", "");
                         if (key == "Id")
+                            _Panel.Controls.Add(new LiteralControl("<td  class='unsortable'>" + key + "</td>"));
+                        if (key.ToLower() == "userid" || !key.Contains("Id"))
                         {
-                            if (!puedeListar.HasValue || puedeSeleccionar.Value)
-                                _Panel.Controls.Add(new LiteralControl("<td><a href='?Id=" + (resultado != null ? resultado.ToString() : "") + "'><b class='fa fa-edit'></b></a></td>"));
+                            if (key.Substring(key.IndexOf("-") + 1).Length > 0)
+                                _Panel.Controls.Add(new LiteralControl("<td>" + Utils.SplitCamelCase(key.Replace("-", "")) + "</td>"));
                             else
-                                _Panel.Controls.Add(new LiteralControl("<td></td>"));
+                                _Panel.Controls.Add(new LiteralControl("<td>" + Utils.SplitCamelCase(key.Substring(0, key.IndexOf("-"))) + "</td>"));
                         }
-                        else
+                    }
+                    #endregion
+                    _Panel.Controls.Add(new LiteralControl("</tr></thead>"));
+                    _Panel.Controls.Add(new LiteralControl("<tbody id='toPaginador'>"));
+                    #region ListadoBody
+                    /* ----------------
+                     * Agregando cuerpo de listado en una tabla de HTML
+                     * ----------------*/
+                    _Listado = model.Listado<T>().Take(_Cantidad).ToList();
+                    foreach (T item in _Listado)
+                    {
+                        _Panel.Controls.Add(new LiteralControl("<tr>"));
+                        foreach (KeyValuePair<string, string> campo in _Fields)
                         {
-                            if (key.ToLower()=="userid" || !key.Contains("Id"))
+                            object resultado = null;
+                            string key = campo.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "").Replace("rbt", "");
+                            bool isDDL = campo.Key.Substring(0, 3) == "ddl";
+
+                            if (!isDDL)
                             {
-                                if (campo.Value != "Boolean")
-                                    _Panel.Controls.Add(new LiteralControl("<td>" + (resultado != null ? resultado.ToString() : "") + "</td>"));
+                                Type tipoDePropiedad = Type.GetType("System." + campo.Value);
+                                PropertyInfo propiedad = item.GetType().GetProperty(key);
+                                resultado = propiedad.GetValue(item, null) != null ? propiedad.GetValue(item, null).ToString() : "";
+                            }
+                            else
+                            {
+                                object id = 0;
+
+                                Type tipoDePropiedad = Type.GetType("System." + campo.Value);
+
+                                PropertyInfo propiedad = null;
+                                if (key.Substring(key.IndexOf("-") + 1).Length > 0)
+                                {
+                                    propiedad = item.GetType().GetProperty("Id" + key.Replace("-", ""));
+                                    key = key.Substring(0, key.IndexOf("-"));
+                                }
                                 else
                                 {
-                                    switch (_BooleanAs)
-                                    {
-                                        case eBooleanAs.RadioButton:
-                                            _Panel.Controls.Add(new LiteralControl("<td>" + (resultado != null ? (resultado.ToString() == "True" ? "Si" : "No") : "") + "</td>"));
-                                            break;
-                                        case eBooleanAs.CheckBox:
-                                            _Panel.Controls.Add(new LiteralControl("<td><input type='checkbox' " + (resultado != null ? (resultado.ToString() == "True" ? "checked" : "") : "") + "/></td>"));
-                                            break;
-                                        default:
-                                            break;
-                                    }
+                                    propiedad = item.GetType().GetProperty("Id" + key.Substring(0, key.IndexOf("-")));
+                                    key = key.Replace("-", "");
+                                }
+                                /* ------------------------------------------------------------------------
+                                 * Excpeción controlada al llenar ddlList de tablas relacionadas asi mismas
+                                 * ------------------------------------------------------------------------ */
+                                try
+                                {
+                                    id = propiedad.GetValue(item, null);
+                                }
+                                catch { id = 0; }
 
+                                Type clase = Type.GetType(TDynamic.Namespace + "." + key);
+                                DbSet setClase = null;
+                                if (clase != null)
+                                {
+                                    setClase = model.model.Set(clase);
+                                    object instancia = setClase.Find(id);
+                                    try
+                                    {
+                                        resultado = instancia.GetType().GetProperty("Descripcion").GetValue(instancia, null);
+                                    }
+                                    catch { resultado = ""; }
                                 }
                             }
-                        }
+                            if (key == "Id")
+                            {
+                                if (!puedeListar.HasValue || puedeSeleccionar.Value)
+                                    _Panel.Controls.Add(new LiteralControl("<td><a href='?Id=" + (resultado != null ? resultado.ToString() : "") + "'><b class='fa fa-edit'></b></a></td>"));
+                                else
+                                    _Panel.Controls.Add(new LiteralControl("<td></td>"));
+                            }
+                            else
+                            {
+                                if (key.ToLower() == "userid" || !key.Contains("Id"))
+                                {
+                                    if (campo.Value != "Boolean")
+                                        _Panel.Controls.Add(new LiteralControl("<td>" + (resultado != null ? resultado.ToString() : "") + "</td>"));
+                                    else
+                                    {
+                                        switch (_BooleanAs)
+                                        {
+                                            case eBooleanAs.RadioButton:
+                                                _Panel.Controls.Add(new LiteralControl("<td>" + (resultado != null ? (resultado.ToString() == "True" ? "Si" : "No") : "") + "</td>"));
+                                                break;
+                                            case eBooleanAs.CheckBox:
+                                                _Panel.Controls.Add(new LiteralControl("<td><input type='checkbox' " + (resultado != null ? (resultado.ToString() == "True" ? "checked" : "") : "") + "/></td>"));
+                                                break;
+                                            case eBooleanAs.Toogle:
+                                                _Panel.Controls.Add(new LiteralControl("<td><b class='fa fa-toggle-" + (resultado != null ? (resultado.ToString() == "True" ? "on" : "off") : "off") + "' style='color: " + (resultado != null ? (resultado.ToString() == "True" ? "green" : "gray") : "gray") + "'></b></td>"));
+                                                break;
+                                            default:
+                                                break;
+                                        }
 
+                                    }
+                                }
+                            }
+
+                        }
+                        _Panel.Controls.Add(new LiteralControl("</tr>"));
                     }
-                    _Panel.Controls.Add(new LiteralControl("</tr>"));
+                    #endregion
+                    _Panel.Controls.Add(new LiteralControl("</tbody></table></section>"));
                 }
-                #endregion
-                _Panel.Controls.Add(new LiteralControl("</tbody></table></section>"));
-            }
                 #endregion
             }
             else
