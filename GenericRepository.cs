@@ -19,10 +19,11 @@
  *                                     de forma automatica, ppara cambiar se debe agregar hacer override OnInit(EventArgs e)
  *                                     y agregar la propiedad TituloPagina="titulo deseado";
  *               27-10-2015 04:17PM .- Se agrega opción para eButtonAs {Button, LinkButton} para generación de botones como enlaces
- *                                     con la finalidad de agregar iconos de FontAwesome
+ *                                     con la finalidad de agregar iconos de FontAwesome.
+ *               03-11-2015 02:21PM .- Se agrega mejora para los casos donde el MasterPages a usar, dependa de otro MasterPage
  *
  * CREADO......: 20-03-2015 11:53PM
- * ACTUALIZADO.: 27-10-2015 04:17PM
+ * ACTUALIZADO.: 03-11-2015 02:21PM
  * ----------------------------------------------------------------------------------------------------------------------------- */
 using System;
 using System.Collections.Generic;
@@ -293,7 +294,10 @@ namespace GenericRepository
             {
                 _Panel = new System.Web.UI.WebControls.Panel() { ID = "PN" };
                 MasterPage masterPage = this.Master;
-                HtmlForm form = this.Master.Controls.OfType<System.Web.UI.HtmlControls.HtmlForm>().FirstOrDefault();
+                HtmlForm form = null;
+                form=this.Master.Controls.OfType<System.Web.UI.HtmlControls.HtmlForm>().FirstOrDefault();
+                if(form==null)
+                    form=this.Master.Master.Controls.OfType<System.Web.UI.HtmlControls.HtmlForm>().FirstOrDefault();
                 ContentPlaceHolder cph = form.Controls.OfType<ContentPlaceHolder>().FirstOrDefault();
                 cph.Controls.Add(_Panel);
             }
