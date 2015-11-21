@@ -21,6 +21,7 @@
  *               27-10-2015 04:17PM .- Se agrega opción para eButtonAs {Button, LinkButton} para generación de botones como enlaces
  *                                     con la finalidad de agregar iconos de FontAwesome.
  *               03-11-2015 02:21PM .- Se agrega mejora para los casos donde el MasterPages a usar, dependa de otro MasterPage
+ *               21-11-2015 01:21PM .- Se incluye propiedad Redondear para controlar la cantidad de decimales en la visualización de las tablas y de los valores almacenados en la tabla
  *
  * CREADO......: 20-03-2015 11:53PM
  * ACTUALIZADO.: 03-11-2015 02:21PM
@@ -237,6 +238,16 @@ namespace GenericRepository
             get { return _TituloPagina; }
             set { _TituloPagina = value; }
         }
+        
+        private short _Redondear= 2;
+        /// <summary>
+        /// Cantidad de decimales que serán usados para números decimales, su valor por defecto serán 2
+        /// </summary>
+        public short Redondear        {
+            get { return _Redondear; }
+            set { _Redondear = value; }
+        }
+        
         private Panel _Panel = null;
         /// <summary>
         /// Instancia del Panel que será usado para crear todos los elementos de la instancia del objeto recibido
@@ -654,7 +665,12 @@ namespace GenericRepository
                             {
                                 Type tipoDePropiedad = Type.GetType("System." + campo.Value);
                                 PropertyInfo propiedad = item.GetType().GetProperty(key);
-                                resultado = propiedad.GetValue(item, null) != null ? propiedad.GetValue(item, null).ToString() : "";
+                                if (campo.Value == "Decimal")
+                                {
+                                    resultado = propiedad.GetValue(item, null) != null ? Math.Round((decimal)propiedad.GetValue(item, null), _Redondear).ToString() : "";
+                                }
+                                else
+                                    resultado = propiedad.GetValue(item, null) != null ? propiedad.GetValue(item, null).ToString() : "";
                             }
                             else
                             {
@@ -906,7 +922,10 @@ namespace GenericRepository
                     string key = par.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "").Replace("rbt", "");
                     Type.GetType("System." + par.Value);
                     object result = item.GetType().GetProperty(key).GetValue(item, null);
-                    txt.Text = result.ToString();
+                    if (par.Value == "Decimal")
+                        txt.Text = Math.Round((decimal)result, _Redondear).ToString();
+                    else
+                        txt.Text = result.ToString();
                 }
 
                 #endregion
