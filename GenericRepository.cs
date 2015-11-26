@@ -847,6 +847,19 @@ namespace GenericRepository
                         }
                         break;
                     }
+                case eBooleanAs.Toogle:
+                    {
+                        List<CheckBox> chks = _Panel.Controls.OfType<CheckBox>().ToList();
+                        foreach (CheckBox chk in chks)
+                        {
+                            KeyValuePair<string, string> par = Fields.Where(x => x.Key == chk.ID).FirstOrDefault();
+                            string key = par.Key;
+                            key = par.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "").Replace("rbt", "");
+                            Type.GetType("System." + par.Value);
+                            _.GetType().GetProperty(key).SetValue(_, chk.Checked, null);
+                        }
+                        break;
+                    }
                 default:
                     break;
             }
@@ -951,6 +964,19 @@ namespace GenericRepository
                             break;
                         }
                     case eBooleanAs.CheckBox:
+                        {
+                            List<CheckBox> chks = _Panel.Controls.OfType<CheckBox>().ToList();
+                            foreach (CheckBox chk in chks)
+                            {
+                                KeyValuePair<string, string> par = Fields.Where(x => x.Key == chk.ID).FirstOrDefault();
+                                string key = par.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "").Replace("rbt", "");
+                                Type.GetType("System." + par.Value);
+                                object result = item.GetType().GetProperty(key).GetValue(item, null);
+                                chk.Checked = (bool)result;
+                            }
+                            break;
+                        }
+                    case eBooleanAs.Toogle:
                         {
                             List<CheckBox> chks = _Panel.Controls.OfType<CheckBox>().ToList();
                             foreach (CheckBox chk in chks)
