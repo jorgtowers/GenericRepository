@@ -22,6 +22,9 @@
  *                                     con la finalidad de agregar iconos de FontAwesome.
  *               03-11-2015 02:21PM .- Se agrega mejora para los casos donde el MasterPages a usar, dependa de otro MasterPage
  *               21-11-2015 01:21PM .- Se incluye propiedad Redondear para controlar la cantidad de decimales en la visualización de las tablas y de los valores almacenados en la tabla
+ *               06-12-2015 02:47PM .- Se incluye propiedad Campos para controlar la visualización de los campos en el listado HTML
+ *                                     se crean nueva clase "Custom" internta dentro de PageDynamic<T> para ordenar todas las propiedades
+ *                                     de personalización de la clase de PageDynamic<T>.
  *
  * CREADO......: 20-03-2015 11:53PM
  * ACTUALIZADO.: 03-11-2015 02:21PM
@@ -142,112 +145,267 @@ namespace GenericRepository
         }
 
     }
-    /// <summary>
+     /// <summary>
     /// Clase especializada para la generación de páginas web apartir del nombre de una instancia, usando reflextion, para reescribir su configuración se debe hacer un override de OnInit y afectar a las propiedades expuestas
     /// </summary>
     /// <typeparam name="T">Instancia de Type a usar</typeparam>
     [Information(Descripcion = "Clase especializada para la generación de páginas web apartir del nombre de una instancia, usando reflextion")]
     public abstract class PageDynamic<T> : AbstractPage where T : class, new()
     {
+        /// <summary>
+        /// Enumerativo que determinar la presentación usarán los datos de tipo Boolean
+        /// </summary>
+        public enum eBooleanAs { RadioButton, CheckBox, Toogle }
+        /// <summary>
+        /// Enumerativo que determinar la presentación usarán los botones de acciones para el CRUD
+        /// </summary>
+        public enum eButtonsAs { Button, LinkButton }
+        internal class Custom {
+            internal class Core {
+                internal class Listado
+                {
+                    private static int _MaxRegistros = 1000;
+                    /// <summary>
+                    /// Cantidad de registros a retornar en el listado por defecto
+                    /// </summary>
+                    public static int MaxRegistros
+                    {
+                        get { return _MaxRegistros; }
+                        set { _MaxRegistros = value; }
+                    }
+                }
+                private static short _Redondear = 2;
+                /// <summary>
+                /// Cantidad de decimales que serán usados para números decimales, su valor por defecto serán 2
+                /// </summary>
+                public static short Redondear
+                {
+                    get { return _Redondear; }
+                    set { _Redondear = value; }
+                }
+            }
+            internal class UI
+            {
+                internal class TableHTML
+                {
+                    private static string _Campos = "*";
+                    /// <summary>
+                    /// Indique nombre de campos separando por coma (,) los que serán mostradas en la Tabla HTML , por defecto mostrará todos los campos (*). Ej.: Id,Descripcion
+                    /// </summary>
+                    public static string Campos
+                    {
+                        get { return _Campos; }
+                        set { _Campos = value; }
+                    }
+                    private static string _Titulo = string.Empty;
+                    /// <summary>
+                    /// Nombre que tendrá el titulo de la página, su valor por defecto está en blanco "String.Empty"
+                    /// </summary>
+                    public static string Titulo
+                    {
+                        get { return _Titulo; }
+                        set { _Titulo = value; }
+                    }
+                }
+                internal class BooleanAs {
+                    private static eBooleanAs _MostrarComo = eBooleanAs.Toogle;
+                    /// <summary>
+                    /// Permite controlar la presentación que usarán los datos de tipo Boolean, por defecto se usará eBooleanAs.CheckBox
+                    /// </summary>
+                    public static eBooleanAs MostrarComo
+                    {
+                        get { return _MostrarComo; }
+                        set { _MostrarComo = value; }
+                    }
+                }
+                internal class TextBoxAs
+                {
+                    private static string _MultiLinea = "texto";
+                    /// <summary>
+                    /// Indique nombre de campos separando por coma (,) los que serán tipo "Multilinea", por defecto buscará campo llamado TEXTO. Ej.: Texto,Observacion,Descripcion
+                    /// </summary>
+                    public static string MultiLinea
+                    {
+                        get { return _MultiLinea; }
+                        set { _MultiLinea = value; }
+                    }
+                    private static string _Fecha = "";
+                    public static string Fecha
+                    {
+                        get
+                        {
+                            return _Fecha;
+                        }
+
+                        set
+                        {
+                            _Fecha = value;
+                        }
+                    }
+                }
+                internal class ButtonAs {
+                    internal class Names {
+                        private static string _Agregar = "Nuevo";
+                        /// <summary>
+                        /// Nombre que tendrá el boton de btnAgregar, su valor por defecto es "Nuevo"
+                        /// </summary>                        
+                        public static string Agregar
+                        {
+                            get { return _Agregar; }
+                            set { _Agregar = value; }
+                        }
+                        private static string _Modificar = "Guardar";
+                        /// <summary>
+                        /// Nombre que tendrá el boton de btnModificar, su valor por defecto es "Guardar"
+                        /// </summary>                        
+                        public static string Modificar
+                        {
+                            get { return _Modificar; }
+                            set { _Modificar = value; }
+                        }
+                        private static string _Eliminar = "Borrar";
+                        /// <summary>
+                        /// Nombre que tendrá el boton de btnEliminar, su valor por defecto es "Borrar"
+                        /// </summary>
+                        public static string Eliminar
+                        {
+                            get { return _Eliminar; }
+                            set { _Eliminar = value; }
+                        }
+                        private static string _Limpiar = "Cancelar";
+                        /// <summary>
+                        /// Nombre que tendrá el boton de btnLimpiar, su valor por defecto es "Cancelar"
+                        /// </summary>
+                        public static string Limpiar
+                        {
+                            get { return _Limpiar; }
+                            set { _Limpiar = value; }
+                        }
+                    }
+                    private static eButtonsAs _MostrarComo = eButtonsAs.LinkButton;
+                    /// <summary>
+                    /// Permite controlar la presentación que usarán los botones de acciones para el CRUD, por defecto se usará eButtonsAs.LinkButton
+                    /// </summary>
+                    public static eButtonsAs MostrarComo
+                    {
+                        get { return _MostrarComo; }
+                        set { _MostrarComo = value; }
+                    }
+                }
+               
+            }
+        }
+        [Obsolete("Usar PageDynamic<T>.Custom.Core.Listado.CantidadRegistros", true)]
         private int _Cantidad = 1000;
         /// <summary>
         /// Cantidad de registros a retornar en el listado por defecto
         /// </summary>
+        [Obsolete("Usar PageDynamic<T>.Custom.Core.Listado.CantidadRegistros", true)]
         public int Cantidad
         {
             get { return _Cantidad; }
             set { _Cantidad = value; }
         }
-        /// <summary>
-        /// Enumerativo que determinar la presentación usarán los datos de tipo Boolean
-        /// </summary>
-        public enum eBooleanAs { RadioButton, CheckBox,Toogle }
-        /// <summary>
-        /// Enumerativo que determinar la presentación usarán los botones de acciones para el CRUD
-        /// </summary>
-        public enum eButtonsAs { Button, LinkButton }
+        [Obsolete("Usar PageDynamic<T>.Custom.UI.BooleanAs.MostrarComo", true)]
         private eBooleanAs _BooleanAs = eBooleanAs.Toogle;
         /// <summary>
         /// Permite controlar la presentación que usarán los datos de tipo Boolean, por defecto se usará eBooleanAs.CheckBox
         /// </summary>
+        [Obsolete("Usar PageDynamic<T>.Custom.UI.BooleanAs.MostrarComo", true)]
         public eBooleanAs BooleanAs
         {
             get { return _BooleanAs; }
             set { _BooleanAs = value; }
         }
+        [Obsolete("Usar PageDynamic<T>.Custom.UI.ButtonAs.MostrarComo", true)]
         private eButtonsAs _ButtonAs = eButtonsAs.LinkButton;
         /// <summary>
         /// Permite controlar la presentación que usarán los botones de acciones para el CRUD, por defecto se usará eButtonsAs.LinkButton
         /// </summary>
+        [Obsolete("Usar PageDynamic<T>.Custom.UI.ButtonAs.MostrarComo", true)]
         public eButtonsAs ButtonAs
         {
             get { return _ButtonAs; }
             set { _ButtonAs = value; }
         }
+        [Obsolete("Usar PageDynamic<T>.Custom.UI.TextBoxAs.Multilinea", true)]
         private string _CamposTextoMultiLinea = "texto";
         /// <summary>
         /// Indique nombre de campos separando por coma (,) los que serán tipo "Multilinea", por defecto buscará campo llamado TEXTO. Ej.: Texto,Observacion,Descripcion
         /// </summary>
+        [Obsolete("Usar PageDynamic<T>.Custom.UI.TextBoxAs.Multilinea", true)]
         public string CamposTextoMultiLinea
         {
             get { return _CamposTextoMultiLinea; }
             set { _CamposTextoMultiLinea = value; }
         }
+        [Obsolete("Usar PageDynamic<T>.Custom.UI.ButtonAs.Names.Agregar", true)]
         private string _NombreBotonAgregar = "Nuevo";
         /// <summary>
         /// Nombre que tendrá el boton de btnAgregar, su valor por defecto es "Nuevo"
         /// </summary>
+        [Obsolete("Usar PageDynamic<T>.Custom.UI.ButtonAs.Names.Agregar", true)]
         public string NombreBotonAgregar
         {
             get { return _NombreBotonAgregar; }
             set { _NombreBotonAgregar = value; }
         }
+        [Obsolete("Usar PageDynamic<T>.Custom.UI.ButtonAs.Names.Modificar", true)]
         private string _NombreBotonModificar = "Guardar";
         /// <summary>
         /// Nombre que tendrá el boton de btnModificar, su valor por defecto es "Guardar"
         /// </summary>
+        [Obsolete("Usar PageDynamic<T>.Custom.UI.ButtonAs.Names.Modificar", true)]
         public string NombreBotonModificar
         {
             get { return _NombreBotonModificar; }
             set { _NombreBotonModificar = value; }
         }
+        [Obsolete("Usar PageDynamic<T>.Custom.UI.ButtonAs.Names.Eliminar", true)]
         private string _NombreBotonEliminar = "Borrar";
         /// <summary>
         /// Nombre que tendrá el boton de btnEliminar, su valor por defecto es "Borrar"
         /// </summary>
+        [Obsolete("Usar PageDynamic<T>.Custom.UI.ButtonAs.Names.Eliminar", true)]
         public string NombreBotonEliminar
         {
             get { return _NombreBotonEliminar; }
             set { _NombreBotonEliminar = value; }
         }
+        [Obsolete("Usar PageDynamic<T>.Custom.UI.ButtonAs.Names.Limpiar", true)]
         private string _NombreBotonLimpiar = "Cancelar";
         /// <summary>
         /// Nombre que tendrá el boton de btnLimpiar, su valor por defecto es "Cancelar"
         /// </summary>
+        [Obsolete("Usar PageDynamic<T>.Custom.UI.ButtonAs.Names.Limpiar", true)]
         public string NombreBotonLimpiar
         {
             get { return _NombreBotonLimpiar; }
             set { _NombreBotonLimpiar = value; }
         }
+        [Obsolete("Usar PageDynamic<T>.Custom.UI.TableHTML.Titulo", true)]
         private string _TituloPagina = string.Empty;
         /// <summary>
         /// Nombre que tendrá el titulo de la página, su valor por defecto está en blanco "String.Empty"
         /// </summary>
+        [Obsolete("Usar PageDynamic<T>.Custom.UI.TableHTML.Titulo", true)]
         public string TituloPagina
         {
             get { return _TituloPagina; }
             set { _TituloPagina = value; }
         }
-        
-        private short _Redondear= 2;
+        [Obsolete("Usar PageDynamic<T>.Custom.Core.Redondear", true)]
+        private short _Redondear = 2;
         /// <summary>
         /// Cantidad de decimales que serán usados para números decimales, su valor por defecto serán 2
         /// </summary>
-        public short Redondear        {
+        [Obsolete("Usar PageDynamic<T>.Custom.Core.Redondear", true)]
+        public short Redondear
+        {
             get { return _Redondear; }
             set { _Redondear = value; }
         }
-        
+
         private Panel _Panel = null;
         /// <summary>
         /// Instancia del Panel que será usado para crear todos los elementos de la instancia del objeto recibido
@@ -306,9 +464,9 @@ namespace GenericRepository
                 _Panel = new System.Web.UI.WebControls.Panel() { ID = "PN" };
                 MasterPage masterPage = this.Master;
                 HtmlForm form = null;
-                form=this.Master.Controls.OfType<System.Web.UI.HtmlControls.HtmlForm>().FirstOrDefault();
-                if(form==null)
-                    form=this.Master.Master.Controls.OfType<System.Web.UI.HtmlControls.HtmlForm>().FirstOrDefault();
+                form = this.Master.Controls.OfType<System.Web.UI.HtmlControls.HtmlForm>().FirstOrDefault();
+                if (form == null)
+                    form = this.Master.Master.Controls.OfType<System.Web.UI.HtmlControls.HtmlForm>().FirstOrDefault();
                 ContentPlaceHolder cph = form.Controls.OfType<ContentPlaceHolder>().FirstOrDefault();
                 cph.Controls.Add(_Panel);
             }
@@ -318,10 +476,12 @@ namespace GenericRepository
              * Acciones y permisos del rol
              * --------------------------------------------------- */
             string urlActual = Request.Url.LocalPath;
-            PaginaRol rolEnPagina = null;
-            try {
-                rolEnPagina = UsuarioActual.Rol.PaginaRol.Where(x => x.Pagina.Ruta.ToLower() == urlActual.ToLower()).FirstOrDefault();
-            } catch { }
+            RolPagina rolEnPagina = null;
+            try
+            {
+                rolEnPagina = UsuarioActual.Rol.RolPagina.Where(x => x.Pagina.Ruta.ToLower() == urlActual.ToLower()).FirstOrDefault();
+            }
+            catch { }
             bool? tieneAcceso = null, puedeSeleccionar = null, puedeListar = null, puedeAgregar = null, puedeModificar = null, puedeEliminar = null;
             if (rolEnPagina != null)
             {
@@ -372,19 +532,20 @@ namespace GenericRepository
                     title += TDynamic.Name + "s";
                     break;
             }
-            if (string.IsNullOrEmpty(_TituloPagina))
+            if (string.IsNullOrEmpty(Custom.UI.TableHTML.Titulo))
                 this.Page.Title = title;
             else
             {
-                this.Page.Title = _TituloPagina;
-                title = _TituloPagina;
+                this.Page.Title = Custom.UI.TableHTML.Titulo;
+                title = Custom.UI.TableHTML.Titulo;
             }
             #endregion
 
             base.OnInit(e);
 
 
-            if (!tieneAcceso.HasValue || tieneAcceso.Value) {          
+            if (!tieneAcceso.HasValue || tieneAcceso.Value)
+            {
 
                 PropertyInfo[] propiedades = TDynamic.GetProperties();
 
@@ -462,7 +623,7 @@ namespace GenericRepository
                         {
                             _Fields.Add(new KeyValuePair<string, string>("txt" + nombre, tipo));
                             TextBox t = new TextBox() { ID = "txt" + nombre.Replace(" ", ""), CssClass = "form-control" };
-                            foreach (string item in _CamposTextoMultiLinea.ToLower().Split(','))
+                            foreach (string item in Custom.UI.TextBoxAs.MultiLinea.ToLower().Split(','))
                             {
                                 if (nombre.ToLower() == item)
                                     t.TextMode = TextBoxMode.MultiLine;
@@ -479,9 +640,21 @@ namespace GenericRepository
                             else
                                 if (nombre.ToLower() == "userid" || !nombre.Contains("Id"))
                             {
-                                _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'><b>" + Utils.SplitCamelCase(nombre) + "</b><p>" + labelDescripcion + "</p></td><td>"));
-                                _Panel.Controls.Add(t);
-                                _Panel.Controls.Add(new LiteralControl("</td></tr>"));
+
+                                if (Custom.UI.TextBoxAs.Fecha.Length>0 && Custom.UI.TextBoxAs.Fecha.Split(',').ToList().Contains(nombre))
+                                {
+                                    _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'><b>" + Utils.SplitCamelCase(nombre) + "</b><p>" + labelDescripcion + "</p></td><td>"));
+                                    _Panel.Controls.Add(new LiteralControl("<div class='input-group date datepicker'>"));
+                                    _Panel.Controls.Add(t);
+                                    _Panel.Controls.Add(new LiteralControl("<span class='input-group-addon'><span class='fa fa-calendar-o'></span></span></div></td></tr>"));
+                                }
+                                else
+                                {
+
+                                    _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'><b>" + Utils.SplitCamelCase(nombre) + "</b><p>" + labelDescripcion + "</p></td><td>"));
+                                    _Panel.Controls.Add(t);
+                                    _Panel.Controls.Add(new LiteralControl("</td></tr>"));
+                                }
                             }
                         }
                         if (tipo == "Boolean")
@@ -489,7 +662,7 @@ namespace GenericRepository
                             /* ----------------
                              * Evalua enumerativo "eBooleanAs" para determinar que presentación usarán los datos de tipo Boolean, por defecto se usará eBooleanAs.CheckBox
                              * ----------------*/
-                            switch (_BooleanAs)
+                            switch (Custom.UI.BooleanAs.MostrarComo)
                             {
                                 case eBooleanAs.RadioButton:
                                     {
@@ -547,11 +720,11 @@ namespace GenericRepository
                  * Agregando botones de acciones a la página
                  * ----------------*/
 
-                switch (_ButtonAs)
+                switch (Custom.UI.ButtonAs.MostrarComo)
                 {
                     case eButtonsAs.Button:
                         {
-                            Button btnEliminar = new Button() { ID = "btnEliminar", CssClass = "btn btn-danger", Text = _NombreBotonEliminar };
+                            Button btnEliminar = new Button() { ID = "btnEliminar", CssClass = "btn btn-danger", Text = Custom.UI.ButtonAs.Names.Eliminar };
                             btnEliminar.Attributes.Add("style", "position: absolute;  left:0");
                             btnEliminar.Click += Eliminar;
                             if ((puedeEliminar.HasValue && !puedeEliminar.Value) || base.Id < 1)
@@ -561,7 +734,7 @@ namespace GenericRepository
                                 btnEliminar.Visible = false;
                             _Panel.Controls.Add(btnEliminar);
 
-                            Button btnModificar = new Button() { ID = "btnModificar", CssClass = "btn btn-primary", Text = _NombreBotonModificar };
+                            Button btnModificar = new Button() { ID = "btnModificar", CssClass = "btn btn-primary", Text = Custom.UI.ButtonAs.Names.Modificar };
                             btnModificar.Click += Modificar;
                             btnModificar.OnClientClick = "return app.Utils.ValidarCampos('editPanel',true)";
                             if ((puedeModificar.HasValue && !puedeModificar.Value) || base.Id < 1)
@@ -569,7 +742,7 @@ namespace GenericRepository
 
                             _Panel.Controls.Add(btnModificar);
 
-                            Button btnAgregar = new Button() { ID = "btnAgregar", CssClass = "btn btn-success", Text = _NombreBotonAgregar };
+                            Button btnAgregar = new Button() { ID = "btnAgregar", CssClass = "btn btn-success", Text = Custom.UI.ButtonAs.Names.Agregar };
                             btnAgregar.Click += Agregar;
                             btnAgregar.OnClientClick = "return app.Utils.ValidarCampos('editPanel',true)";
                             if ((puedeAgregar.HasValue && !puedeAgregar.Value) || base.Id > 0)
@@ -577,14 +750,14 @@ namespace GenericRepository
 
                             _Panel.Controls.Add(btnAgregar);
 
-                            Button btnLimpiar = new Button() { ID = "btnLimpiar", CssClass = "btn btn-default", Text = _NombreBotonLimpiar };
+                            Button btnLimpiar = new Button() { ID = "btnLimpiar", CssClass = "btn btn-default", Text = Custom.UI.ButtonAs.Names.Limpiar };
                             btnLimpiar.Click += Limpiar;
                             _Panel.Controls.Add(btnLimpiar);
                             break;
                         }
                     case eButtonsAs.LinkButton:
                         {
-                            LinkButton btnEliminar = new LinkButton() { ID = "btnEliminar", CssClass = "btn btn-danger", Text = "<b class='fa fa-times' ></b>&nbsp;" + _NombreBotonEliminar };
+                            LinkButton btnEliminar = new LinkButton() { ID = "btnEliminar", CssClass = "btn btn-danger", Text = "<b class='fa fa-times' ></b>&nbsp;" + Custom.UI.ButtonAs.Names.Eliminar };
                             btnEliminar.Attributes.Add("style", "position: absolute;  left:0");
                             btnEliminar.Click += Eliminar;
                             if ((puedeEliminar.HasValue && !puedeEliminar.Value) || base.Id < 1)
@@ -593,21 +766,21 @@ namespace GenericRepository
                                 btnEliminar.Visible = false;
                             _Panel.Controls.Add(btnEliminar);
 
-                            LinkButton btnModificar = new LinkButton() { ID = "btnModificar", CssClass = "btn btn-primary", Text = "<b class='fa fa-save' ></b>&nbsp;" + _NombreBotonModificar };
+                            LinkButton btnModificar = new LinkButton() { ID = "btnModificar", CssClass = "btn btn-primary", Text = "<b class='fa fa-save' ></b>&nbsp;" + Custom.UI.ButtonAs.Names.Modificar };
                             btnModificar.Click += Modificar;
                             btnModificar.OnClientClick = "return app.Utils.ValidarCampos('editPanel',true)";
                             if ((puedeModificar.HasValue && !puedeModificar.Value) || base.Id < 1)
                                 btnModificar.Visible = false;
                             _Panel.Controls.Add(btnModificar);
 
-                            LinkButton btnAgregar = new LinkButton() { ID = "btnAgregar", CssClass = "btn btn-success", Text = "<b class='fa fa-plus-circle' ></b>&nbsp;" + _NombreBotonAgregar };
+                            LinkButton btnAgregar = new LinkButton() { ID = "btnAgregar", CssClass = "btn btn-success", Text = "<b class='fa fa-plus-circle' ></b>&nbsp;" + Custom.UI.ButtonAs.Names.Agregar };
                             btnAgregar.Click += Agregar;
                             btnAgregar.OnClientClick = "return app.Utils.ValidarCampos('editPanel',true)";
                             if ((puedeAgregar.HasValue && !puedeAgregar.Value) || base.Id > 0)
                                 btnAgregar.Visible = false;
                             _Panel.Controls.Add(btnAgregar);
 
-                            LinkButton btnLimpiar = new LinkButton() { ID = "btnLimpiar", CssClass = "btn btn-default", Text = _NombreBotonLimpiar };
+                            LinkButton btnLimpiar = new LinkButton() { ID = "btnLimpiar", CssClass = "btn btn-default", Text = Custom.UI.ButtonAs.Names.Limpiar };
                             btnLimpiar.Click += Limpiar;
                             _Panel.Controls.Add(btnLimpiar);
                             break;
@@ -633,16 +806,21 @@ namespace GenericRepository
                      * ----------------*/
                     foreach (KeyValuePair<string, string> headers in _Fields)
                     {
-                        string key = headers.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "").Replace("rbt", "");
-                        if (key == "Id")
-                            _Panel.Controls.Add(new LiteralControl("<td  class='unsortable'>" + key + "</td>"));
-                        if (key.ToLower() == "userid" || !key.Contains("Id"))
-                        {
-                            if (key.Substring(key.IndexOf("-") + 1).Length > 0)
-                                _Panel.Controls.Add(new LiteralControl("<td>" + Utils.SplitCamelCase(key.Replace("-", "")) + "</td>"));
-                            else
-                                _Panel.Controls.Add(new LiteralControl("<td>" + Utils.SplitCamelCase(key.Substring(0, key.IndexOf("-"))) + "</td>"));
-                        }
+
+                    
+                            string key = headers.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "").Replace("rbt", "");
+                            if (Custom.UI.TableHTML.Campos == "*" || Custom.UI.TableHTML.Campos.Split(',').ToList().Contains(key)) {                                
+                                if (key == "Id")
+                                    _Panel.Controls.Add(new LiteralControl("<td  class='unsortable'>" + key + "</td>"));
+                                if (key.ToLower() == "userid" || !key.Contains("Id"))
+                                {
+                                    if (key.Substring(key.IndexOf("-") + 1).Length > 0)
+                                        _Panel.Controls.Add(new LiteralControl("<td>" + Utils.SplitCamelCase(key.Replace("-", "")) + "</td>"));
+                                    else
+                                        _Panel.Controls.Add(new LiteralControl("<td>" + Utils.SplitCamelCase(key.Substring(0, key.IndexOf("-"))) + "</td>"));
+                                }
+                            }
+                    
                     }
                     #endregion
                     _Panel.Controls.Add(new LiteralControl("</tr></thead>"));
@@ -651,100 +829,105 @@ namespace GenericRepository
                     /* ----------------
                      * Agregando cuerpo de listado en una tabla de HTML
                      * ----------------*/
-                    _Listado = model.Listado<T>().Take(_Cantidad).ToList();
+                    _Listado = model.Listado<T>().Take(Custom.Core.Listado.MaxRegistros).ToList();
                     foreach (T item in _Listado)
                     {
                         _Panel.Controls.Add(new LiteralControl("<tr>"));
                         foreach (KeyValuePair<string, string> campo in _Fields)
                         {
-                            object resultado = null;
                             string key = campo.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "").Replace("rbt", "");
-                            bool isDDL = campo.Key.Substring(0, 3) == "ddl";
-
-                            if (!isDDL)
+                            if (Custom.UI.TableHTML.Campos == "*" || Custom.UI.TableHTML.Campos.Split(',').ToList().Contains(key))
                             {
-                                Type tipoDePropiedad = Type.GetType("System." + campo.Value);
-                                PropertyInfo propiedad = item.GetType().GetProperty(key);
-                                if (campo.Value == "Decimal")
-                                {
-                                    resultado = propiedad.GetValue(item, null) != null ? Math.Round((decimal)propiedad.GetValue(item, null), _Redondear).ToString() : "";
-                                }
-                                else
-                                    resultado = propiedad.GetValue(item, null) != null ? propiedad.GetValue(item, null).ToString() : "";
-                            }
-                            else
-                            {
-                                object id = 0;
+                                #region Campos de Tabla HTML
 
-                                Type tipoDePropiedad = Type.GetType("System." + campo.Value);
+                                bool isDDL = campo.Key.Substring(0, 3) == "ddl";
 
-                                PropertyInfo propiedad = null;
-                                if (key.Substring(key.IndexOf("-") + 1).Length > 0)
+                                object resultado = null;
+                                if (!isDDL)
                                 {
-                                    propiedad = item.GetType().GetProperty("Id" + key.Replace("-", ""));
-                                    key = key.Substring(0, key.IndexOf("-"));
-                                }
-                                else
-                                {
-                                    propiedad = item.GetType().GetProperty("Id" + key.Substring(0, key.IndexOf("-")));
-                                    key = key.Replace("-", "");
-                                }
-                                /* ------------------------------------------------------------------------
-                                 * Excpeción controlada al llenar ddlList de tablas relacionadas asi mismas
-                                 * ------------------------------------------------------------------------ */
-                                try
-                                {
-                                    id = propiedad.GetValue(item, null);
-                                }
-                                catch { id = 0; }
-
-                                Type clase = Type.GetType(TDynamic.Namespace + "." + key);
-                                DbSet setClase = null;
-                                if (clase != null)
-                                {
-                                    setClase = model.model.Set(clase);
-                                    object instancia = setClase.Find(id);
-                                    try
+                                    Type tipoDePropiedad = Type.GetType("System." + campo.Value);
+                                    PropertyInfo propiedad = item.GetType().GetProperty(key);
+                                    if (campo.Value == "Decimal")
                                     {
-                                        resultado = instancia.GetType().GetProperty("Descripcion").GetValue(instancia, null);
+                                        resultado = propiedad.GetValue(item, null) != null ? Math.Round((decimal)propiedad.GetValue(item, null), Custom.Core.Redondear).ToString() : "";
                                     }
-                                    catch { resultado = ""; }
+                                    else
+                                        resultado = propiedad.GetValue(item, null) != null ? propiedad.GetValue(item, null).ToString() : "";
                                 }
-                            }
-                            if (key == "Id")
-                            {
-                                if (!puedeListar.HasValue || puedeSeleccionar.Value)
-                                    _Panel.Controls.Add(new LiteralControl("<td><a href='?Id=" + (resultado != null ? resultado.ToString() : "") + "'><b class='fa fa-edit'></b></a></td>"));
                                 else
-                                    _Panel.Controls.Add(new LiteralControl("<td></td>"));
-                            }
-                            else
-                            {
-                                if (key.ToLower() == "userid" || !key.Contains("Id"))
                                 {
-                                    if (campo.Value != "Boolean")
-                                        _Panel.Controls.Add(new LiteralControl("<td>" + (resultado != null ? resultado.ToString() : "") + "</td>"));
+                                    object id = 0;
+
+                                    Type tipoDePropiedad = Type.GetType("System." + campo.Value);
+
+                                    PropertyInfo propiedad = null;
+                                    if (key.Substring(key.IndexOf("-") + 1).Length > 0)
+                                    {
+                                        propiedad = item.GetType().GetProperty("Id" + key.Replace("-", ""));
+                                        key = key.Substring(0, key.IndexOf("-"));
+                                    }
                                     else
                                     {
-                                        switch (_BooleanAs)
-                                        {
-                                            case eBooleanAs.RadioButton:
-                                                _Panel.Controls.Add(new LiteralControl("<td>" + (resultado != null ? (resultado.ToString() == "True" ? "Si" : "No") : "") + "</td>"));
-                                                break;
-                                            case eBooleanAs.CheckBox:
-                                                _Panel.Controls.Add(new LiteralControl("<td><input type='checkbox' " + (resultado != null ? (resultado.ToString() == "True" ? "checked" : "") : "") + "/></td>"));
-                                                break;
-                                            case eBooleanAs.Toogle:
-                                                _Panel.Controls.Add(new LiteralControl("<td><b class='fa fa-toggle-" + (resultado != null ? (resultado.ToString() == "True" ? "on" : "off") : "off") + "' style='color: " + (resultado != null ? (resultado.ToString() == "True" ? "green" : "gray") : "gray") + "'></b></td>"));
-                                                break;
-                                            default:
-                                                break;
-                                        }
+                                        propiedad = item.GetType().GetProperty("Id" + key.Substring(0, key.IndexOf("-")));
+                                        key = key.Replace("-", "");
+                                    }
+                                    /* ------------------------------------------------------------------------
+                                     * Excpeción controlada al llenar ddlList de tablas relacionadas asi mismas
+                                     * ------------------------------------------------------------------------ */
+                                    try
+                                    {
+                                        id = propiedad.GetValue(item, null);
+                                    }
+                                    catch { id = 0; }
 
+                                    Type clase = Type.GetType(TDynamic.Namespace + "." + key);
+                                    DbSet setClase = null;
+                                    if (clase != null)
+                                    {
+                                        setClase = model.model.Set(clase);
+                                        object instancia = setClase.Find(id);
+                                        try
+                                        {
+                                            resultado = instancia.GetType().GetProperty("Descripcion").GetValue(instancia, null);
+                                        }
+                                        catch { resultado = ""; }
                                     }
                                 }
-                            }
+                                if (key == "Id")
+                                {
+                                    if (!puedeListar.HasValue || puedeSeleccionar.Value)
+                                        _Panel.Controls.Add(new LiteralControl("<td><a href='?Id=" + (resultado != null ? resultado.ToString() : "") + "'><b class='fa fa-edit'></b></a></td>"));
+                                    else
+                                        _Panel.Controls.Add(new LiteralControl("<td></td>"));
+                                }
+                                else
+                                {
+                                    if (key.ToLower() == "userid" || !key.Contains("Id"))
+                                    {
+                                        if (campo.Value != "Boolean")
+                                            _Panel.Controls.Add(new LiteralControl("<td>" + (resultado != null ? resultado.ToString() : "") + "</td>"));
+                                        else
+                                        {
+                                            switch (Custom.UI.BooleanAs.MostrarComo)
+                                            {
+                                                case eBooleanAs.RadioButton:
+                                                    _Panel.Controls.Add(new LiteralControl("<td>" + (resultado != null ? (resultado.ToString() == "True" ? "Si" : "No") : "") + "</td>"));
+                                                    break;
+                                                case eBooleanAs.CheckBox:
+                                                    _Panel.Controls.Add(new LiteralControl("<td><input type='checkbox' " + (resultado != null ? (resultado.ToString() == "True" ? "checked" : "") : "") + "/></td>"));
+                                                    break;
+                                                case eBooleanAs.Toogle:
+                                                    _Panel.Controls.Add(new LiteralControl("<td><b class='fa fa-toggle-" + (resultado != null ? (resultado.ToString() == "True" ? "on" : "off") : "off") + "' style='color: " + (resultado != null ? (resultado.ToString() == "True" ? "green" : "gray") : "gray") + "'></b></td>"));
+                                                    break;
+                                                default:
+                                                    break;
+                                            }
 
+                                        }
+                                    }
+                                }
+                                #endregion
+                            }
                         }
                         _Panel.Controls.Add(new LiteralControl("</tr>"));
                     }
@@ -807,7 +990,7 @@ namespace GenericRepository
             }
             #endregion
             #region Evalua todos los CheckBox y/o RadioButton segun la propiedad eBooleanAs
-            switch (_BooleanAs)
+            switch (Custom.UI.BooleanAs.MostrarComo)
             {
                 case eBooleanAs.RadioButton:
                     {
@@ -936,14 +1119,14 @@ namespace GenericRepository
                     Type.GetType("System." + par.Value);
                     object result = item.GetType().GetProperty(key).GetValue(item, null);
                     if (par.Value == "Decimal")
-                        txt.Text = Math.Round((decimal)result, _Redondear).ToString();
+                        txt.Text = Math.Round((decimal)result, Custom.Core.Redondear).ToString();
                     else
                         txt.Text = result.ToString();
                 }
 
                 #endregion
                 #region Evalua todos los CheckBox y/o RadioButton segun la propiedad eBooleanAs
-                switch (_BooleanAs)
+                switch (Custom.UI.BooleanAs.MostrarComo)
                 {
                     case eBooleanAs.RadioButton:
                         {
