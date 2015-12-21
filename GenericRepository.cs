@@ -25,9 +25,10 @@
  *               06-12-2015 02:47PM .- Se incluye propiedad Campos para controlar la visualización de los campos en el listado HTML
  *                                     se crean nueva clase "Custom" internta dentro de PageDynamic<T> para ordenar todas las propiedades
  *                                     de personalización de la clase de PageDynamic<T>.
+ *               21-12-2015 02:34PM .- Se incluye propiedad Campos para controlar el MaxLenght de los campos de Texto
  *
  * CREADO......: 20-03-2015 11:53PM
- * ACTUALIZADO.: 03-11-2015 02:21PM
+ * ACTUALIZADO.: 21-12-2015 02:34PM
  * ----------------------------------------------------------------------------------------------------------------------------- */
 using System;
 using System.Collections.Generic;
@@ -241,6 +242,15 @@ namespace GenericRepository
                         {
                             _Fecha = value;
                         }
+                    }
+                    private static string _MaxLength = "descripcion:80";
+                    /// <summary>
+                    /// Indique nombre de campos separando por coma (,) y dos puntos (:) el valor del MaxLenght por campo, a los cuales se les establecerá el atributo maxlength. Ej.: Descripcion:80,Observacion:255
+                    /// </summary>
+                    public static string MaxLength
+                    {
+                        get { return _MaxLength; }
+                        set { _MaxLength = value; }
                     }
                 }
                 internal class ButtonAs {
@@ -623,11 +633,22 @@ namespace GenericRepository
                         {
                             _Fields.Add(new KeyValuePair<string, string>("txt" + nombre, tipo));
                             TextBox t = new TextBox() { ID = "txt" + nombre.Replace(" ", ""), CssClass = "form-control" };
+                            
+                            //Establece el tipo Multilinea a los campos indicados en la propiedad Custom.UI.TextBoxAs.MultiLinea
                             foreach (string item in Custom.UI.TextBoxAs.MultiLinea.ToLower().Split(','))
                             {
                                 if (nombre.ToLower() == item)
                                     t.TextMode = TextBoxMode.MultiLine;
                             }
+
+                            //Establece el Maximo de caracteres permitido a los campos indicados en la propiedad Custom.UI.TextBoxAs.MaxLength
+                            foreach (string item in Custom.UI.TextBoxAs.MaxLength.ToLower().Split(','))
+                            {
+                                string[] campo = item.Split(':');                                
+                                if (nombre.ToLower() == campo[0])
+                                    t.MaxLength = int.Parse(campo[1]);
+                            }
+
 
                             t.Attributes.Add("placeHolder", Utils.SplitCamelCase(nombre));
                             if (nombre == "Id")
@@ -640,8 +661,8 @@ namespace GenericRepository
                             else
                                 if (nombre.ToLower() == "userid" || !nombre.Contains("Id"))
                             {
-
-                                if (Custom.UI.TextBoxAs.Fecha.Length>0 && Custom.UI.TextBoxAs.Fecha.Split(',').ToList().Contains(nombre))
+                                //Establece un JQuery de DateTimePicker para los campos indicados en la propiedad Custom.UI.TextBoxAs.Fecha
+                                if (Custom.UI.TextBoxAs.Fecha.Length > 0 && Custom.UI.TextBoxAs.Fecha.Split(',').ToList().Contains(nombre))
                                 {
                                     _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'><b>" + Utils.SplitCamelCase(nombre) + "</b><p>" + labelDescripcion + "</p></td><td>"));
                                     _Panel.Controls.Add(new LiteralControl("<div class='input-group date datepicker'>"));
