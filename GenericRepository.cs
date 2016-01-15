@@ -26,6 +26,8 @@
  *                                     se crean nueva clase "Custom" internta dentro de PageDynamic<T> para ordenar todas las propiedades
  *                                     de personalización de la clase de PageDynamic<T>.
  *               21-12-2015 02:34PM .- Se incluye propiedad Campos para controlar el MaxLenght de los campos de Texto
+ *               15-01-2016 01:43PM .- Se incluye propiedad Campos para controlar validaciones de Expresiones REgulares sobre los campos usando
+ *                                     ValidationPattern del objeto App.Validation.js
  *
  * CREADO......: 20-03-2015 11:53PM
  * ACTUALIZADO.: 21-12-2015 02:34PM
@@ -251,6 +253,16 @@ namespace GenericRepository
                     {
                         get { return _MaxLength; }
                         set { _MaxLength = value; }
+                    }
+                    
+                    private static string _ValidationPattern = "";
+                    /// <summary>
+                    /// Indique nombre de campos separando por coma (,) y dos puntos (:) del valor de la clave del JS App.JS para el NS "App.Utils.Validation" por campo. Ej.: Descripcion:1,Observacion:0, donde "1" permite solo valores númericos y "0" una direccion url
+                    /// </summary>
+                    public static string ValidationPattern
+                    {
+                        get { return _ValidationPattern; }
+                        set { _ValidationPattern = value; }
                     }
                 }
                 internal class ButtonAs {
@@ -648,7 +660,14 @@ namespace GenericRepository
                                 if (nombre.ToLower() == campo[0])
                                     t.MaxLength = int.Parse(campo[1]);
                             }
-
+                            
+                            //Establece el Patron de Validacion de JS, somando el patron de NS App.Utils.Validation.Pattern 
+                            foreach (string item in Custom.UI.TextBoxAs.ValidationPattern.ToLower().Split(','))
+                            {
+                                string[] campo = item.Split(':');
+                                if (nombre.ToLower() == campo[0])
+                                    t.Attributes.Add("validation",campo[1]);
+                            }
 
                             t.Attributes.Add("placeHolder", Utils.SplitCamelCase(nombre));
                             if (nombre == "Id")
@@ -836,7 +855,7 @@ namespace GenericRepository
                                 if (key.ToLower() == "userid" || !key.Contains("Id"))
                                 {
                                     if (key.Substring(key.IndexOf("-") + 1).Length > 0)
-                                        _Panel.Controls.Add(new LiteralControl("<td>" + Utils.SplitCamelCase(key.Replace("-", "")) + "</td>"));
+                                        _Panel.Controls.Add(new LiteralControl("<td  " + ( key=="Avanza" || key == "Seleccionar" || key == "Listar" || key == "Modificar" || key == "Eliminar" || key == "Agregar" || key == "Acceso" || key == "Visible"  ? "class='unsortable'" : "") + "    >" + Utils.SplitCamelCase(key.Replace("-", "")) + "</td>"));
                                     else
                                         _Panel.Controls.Add(new LiteralControl("<td>" + Utils.SplitCamelCase(key.Substring(0, key.IndexOf("-"))) + "</td>"));
                                 }
