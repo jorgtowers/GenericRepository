@@ -584,7 +584,7 @@ namespace GenericRepository
                 PropertyInfo[] propiedades = TDynamic.GetProperties();
 
                 #region Region del Mantenimiento para hacer CRUD de los registros
-                _Panel.Controls.Add(new LiteralControl("<p onclick=app.Utils.Toogle('editPanel')><b class='fa fa-edit'></b>Presione clic o la tecla F9, para abrir panel de edición.</p><div id='editPanel' style='display: none'><span id='closeEditPanel' onclick=app.Utils.Toogle('editPanel')><b class='fa fa-times'></b></span>"));
+                _Panel.Controls.Add(new LiteralControl("<p id='btnToogleEditPanel'><b class='fa fa-edit'></b>Presione clic o la tecla F9, para abrir panel de edición.</p><div id='editPanel' style='display: none'><span id='closeEditPanel' onclick=app.Utils.Toogle('editPanel')><b class='fa fa-times'></b></span>"));
                 _Panel.Controls.Add(new LiteralControl("<nav><h4>Gestión de datos</h4></nav>"));
                 _Panel.Controls.Add(new LiteralControl("<table class='table'><tbody>"));
                 #region Campos para Agregar y/o Editar la información de los registros seleccionados o por crear
@@ -657,7 +657,7 @@ namespace GenericRepository
                         {
                             _Fields.Add(new KeyValuePair<string, string>("txt" + nombre, tipo));
                             TextBox t = new TextBox() { ID = "txt" + nombre.Replace(" ", ""), CssClass = "form-control" };
-                            
+
                             //Establece el tipo Multilinea a los campos indicados en la propiedad Custom.UI.TextBoxAs.MultiLinea
                             foreach (string item in Custom.UI.TextBoxAs.MultiLinea.ToLower().Split(','))
                             {
@@ -668,17 +668,17 @@ namespace GenericRepository
                             //Establece el Maximo de caracteres permitido a los campos indicados en la propiedad Custom.UI.TextBoxAs.MaxLength
                             foreach (string item in Custom.UI.TextBoxAs.MaxLength.ToLower().Split(','))
                             {
-                                string[] campo = item.Split(':');                                
+                                string[] campo = item.Split(':');
                                 if (nombre.ToLower() == campo[0])
                                     t.MaxLength = int.Parse(campo[1]);
                             }
-                            
+
                             //Establece el Patron de Validacion de JS, somando el patron de NS App.Utils.Validation.Pattern 
                             foreach (string item in Custom.UI.TextBoxAs.ValidationPattern.ToLower().Split(','))
                             {
                                 string[] campo = item.Split(':');
                                 if (nombre.ToLower() == campo[0])
-                                    t.Attributes.Add("validation",campo[1]);
+                                    t.Attributes.Add("validation", campo[1]);
                             }
 
                             t.Attributes.Add("placeHolder", Utils.SplitCamelCase(nombre));
@@ -691,23 +691,23 @@ namespace GenericRepository
                             }
                             else
                                 if (nombre.ToLower() == "userid" || !nombre.Contains("Id"))
-                            {
-                                //Establece un JQuery de DateTimePicker para los campos indicados en la propiedad Custom.UI.TextBoxAs.Fecha
-                                if (Custom.UI.TextBoxAs.Fecha.Length > 0 && Custom.UI.TextBoxAs.Fecha.Split(',').ToList().Contains(nombre))
                                 {
-                                    _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'><b>" + Utils.SplitCamelCase(nombre) + "</b><p>" + labelDescripcion + "</p></td><td>"));
-                                    _Panel.Controls.Add(new LiteralControl("<div class='input-group date datepicker'>"));
-                                    _Panel.Controls.Add(t);
-                                    _Panel.Controls.Add(new LiteralControl("<span class='input-group-addon'><span class='fa fa-calendar-o'></span></span></div></td></tr>"));
-                                }
-                                else
-                                {
+                                    //Establece un JQuery de DateTimePicker para los campos indicados en la propiedad Custom.UI.TextBoxAs.Fecha
+                                    if (Custom.UI.TextBoxAs.Fecha.Length > 0 && Custom.UI.TextBoxAs.Fecha.Split(',').ToList().Contains(nombre))
+                                    {
+                                        _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'><b>" + Utils.SplitCamelCase(nombre) + "</b><p>" + labelDescripcion + "</p></td><td>"));
+                                        _Panel.Controls.Add(new LiteralControl("<div class='input-group date datepicker'>"));
+                                        _Panel.Controls.Add(t);
+                                        _Panel.Controls.Add(new LiteralControl("<span class='input-group-addon'><span class='fa fa-calendar-o'></span></span></div></td></tr>"));
+                                    }
+                                    else
+                                    {
 
-                                    _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'><b>" + Utils.SplitCamelCase(nombre) + "</b><p>" + labelDescripcion + "</p></td><td>"));
-                                    _Panel.Controls.Add(t);
-                                    _Panel.Controls.Add(new LiteralControl("</td></tr>"));
+                                        _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'><b>" + Utils.SplitCamelCase(nombre) + "</b><p>" + labelDescripcion + "</p></td><td>"));
+                                        _Panel.Controls.Add(t);
+                                        _Panel.Controls.Add(new LiteralControl("</td></tr>"));
+                                    }
                                 }
-                            }
                         }
                         if (tipo == "Boolean")
                         {
@@ -760,7 +760,7 @@ namespace GenericRepository
 
                     //sb.AppendLine("<br>");
                     //Response.Write(sb.ToString());
-                    #endregion
+                #endregion
                 }
                 _Panel.Controls.Add(new LiteralControl("<tr><td colspan='2'>"));
                 Label lblEstatus = new Label() { ID = "lblEstatus" };
@@ -788,7 +788,7 @@ namespace GenericRepository
 
                             Button btnModificar = new Button() { ID = "btnModificar", CssClass = "btn btn-primary", Text = Custom.UI.ButtonAs.Names.Modificar };
                             btnModificar.Click += Modificar;
-                            btnModificar.OnClientClick = "return app.Utils.ValidarCampos('editPanel',true)";
+                            //btnModificar.OnClientClick = "return app.Utils.ValidarCampos('editPanel',true)";
                             if ((puedeModificar.HasValue && !puedeModificar.Value) || base.Id < 1)
                                 btnModificar.Visible = false;
 
@@ -796,7 +796,7 @@ namespace GenericRepository
 
                             Button btnAgregar = new Button() { ID = "btnAgregar", CssClass = "btn btn-success", Text = Custom.UI.ButtonAs.Names.Agregar };
                             btnAgregar.Click += Agregar;
-                            btnAgregar.OnClientClick = "return app.Utils.ValidarCampos('editPanel',true)";
+                            //btnAgregar.OnClientClick = "return app.Utils.ValidarCampos('editPanel',true)";
                             if ((puedeAgregar.HasValue && !puedeAgregar.Value) || base.Id > 0)
                                 btnAgregar.Visible = false;
 
@@ -820,14 +820,14 @@ namespace GenericRepository
 
                             LinkButton btnModificar = new LinkButton() { ID = "btnModificar", CssClass = "btn btn-primary", Text = "<b class='fa fa-save' ></b>&nbsp;" + Custom.UI.ButtonAs.Names.Modificar };
                             btnModificar.Click += Modificar;
-                            btnModificar.OnClientClick = "return app.Utils.ValidarCampos('editPanel',true)";
+                            //btnModificar.OnClientClick = "return app.Utils.ValidarCampos('editPanel',true)";
                             if ((puedeModificar.HasValue && !puedeModificar.Value) || base.Id < 1)
                                 btnModificar.Visible = false;
                             _Panel.Controls.Add(btnModificar);
 
                             LinkButton btnAgregar = new LinkButton() { ID = "btnAgregar", CssClass = "btn btn-success", Text = "<b class='fa fa-plus-circle' ></b>&nbsp;" + Custom.UI.ButtonAs.Names.Agregar };
                             btnAgregar.Click += Agregar;
-                            btnAgregar.OnClientClick = "return app.Utils.ValidarCampos('editPanel',true)";
+                            //btnAgregar.OnClientClick = "return app.Utils.ValidarCampos('editPanel',true)";
                             if ((puedeAgregar.HasValue && !puedeAgregar.Value) || base.Id > 0)
                                 btnAgregar.Visible = false;
                             _Panel.Controls.Add(btnAgregar);
