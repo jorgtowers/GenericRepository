@@ -1105,6 +1105,8 @@ namespace GenericRepository
             base.OnLoad(e);
             if (!Page.IsPostBack)
             {
+                Mensaje = "";
+                lblEstatus.Text = Mensaje;
                 if (base.Id > 0)
                 {
                     FillCampos(model.Obtener<T>(base.Id));
@@ -1112,6 +1114,18 @@ namespace GenericRepository
                 RefreshListado();
             }
         }
+        protected string Mensaje {
+            get {
+                if (Session["mensaje"] != null)
+                    return Session["mensaje"] as string;
+                else
+                    return string.Empty;
+            }
+            set {
+                Session["mensaje"] = value;
+            }
+        }
+        
         private void RefreshListado()
         {
             _Listado = model.Listado<T>().ToList();
