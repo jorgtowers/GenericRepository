@@ -28,9 +28,12 @@
  *               21-12-2015 02:34PM .- Se incluye propiedad Campos para controlar el MaxLenght de los campos de Texto
  *               15-01-2016 01:43PM .- Se incluye propiedad Campos para controlar validaciones de Expresiones REgulares sobre los campos usando
  *                                     ValidationPattern del objeto App.Validation.js
+ *               19-01-2016 12:00PM .- Se incluye propiedad para controlar el Orden Descendente del Listado, para esto se debe Extender el modelo 
+ *                                     e implementar la interfaz GenericRepository.EF5.IId para cada Entidad y modificar la propiedad 
+ *                                     PageDynamic<T>.Custom.Core.Listado.OrdenDescendente
  *
  * CREADO......: 20-03-2015 11:53PM
- * ACTUALIZADO.: 21-12-2015 02:34PM
+ * ACTUALIZADO.: 19-01-2016 12:00PM
  * ----------------------------------------------------------------------------------------------------------------------------- */
 using System;
 using System.Collections.Generic;
@@ -58,7 +61,7 @@ using System.Data.SqlClient;
 namespace GenericRepository
 {
     [Information(Descripcion = "Clase que implementa metodos genericos apartir del modelo de EDM")]
-    public class PageGeneric<T> : AbstractPage where T : class,new()
+    public class PageGeneric<T> : AbstractPage where T :class,IId, new()
     {
 
         private T _ObjectToUpdate = new T();
@@ -153,7 +156,7 @@ namespace GenericRepository
     /// </summary>
     /// <typeparam name="T">Instancia de Type a usar</typeparam>
     [Information(Descripcion = "Clase especializada para la generación de páginas web apartir del nombre de una instancia, usando reflextion")]
-    public abstract class PageDynamic<T> : AbstractPage where T : class, new()
+    public abstract class PageDynamic<T> : AbstractPage where T :class,IId, new()
     {
         /// <summary>
         /// Enumerativo que determinar la presentación usarán los datos de tipo Boolean
@@ -175,6 +178,15 @@ namespace GenericRepository
                     {
                         get { return _MaxRegistros; }
                         set { _MaxRegistros = value; }
+                    }
+                    private static bool _OrdenDescendente = false;
+                    /// <summary>
+                    /// Permite ordenar los registros de forma descendente por su Id, su orden por defecto será Ascendente, es decir _OrdenDescendente = false;
+                    /// </summary>
+                    public static bool OrdenDescendente
+                    {
+                        get { return _OrdenDescendente; }
+                        set { _OrdenDescendente = value; }
                     }
                 }
                 private static short _Redondear = 2;
@@ -869,7 +881,10 @@ namespace GenericRepository
                     /* ----------------
                      * Agregando cuerpo de listado en una tabla de HTML
                      * ----------------*/
-                    _Listado = model.Listado<T>().Take(Custom.Core.Listado.MaxRegistros).ToList();
+                    if (Custom.Core.Listado.OrdenDescendente)
+                        _Listado = model.Listado<T>().OrderByDescending(x => x.Id).Take(Custom.Core.Listado.MaxRegistros).ToList();
+                    else
+                        _Listado = model.Listado<T>().Take(Custom.Core.Listado.MaxRegistros).ToList();
                     foreach (T item in _Listado)
                     {
                         _Panel.Controls.Add(new LiteralControl("<tr>"));
@@ -1128,7 +1143,10 @@ namespace GenericRepository
         
         private void RefreshListado()
         {
-            _Listado = model.Listado<T>().ToList();
+            if (Custom.Core.Listado.OrdenDescendente)
+                _Listado = model.Listado<T>().OrderByDescending(x => x.Id).Take(Custom.Core.Listado.MaxRegistros).ToList();
+            else
+                _Listado = model.Listado<T>().Take(Custom.Core.Listado.MaxRegistros).ToList();
         }
         private void FillCampos(T item)
         {
@@ -1830,9 +1848,8 @@ namespace GenericRepository
     namespace EF5
     {   
         /// <summary>
-        /// Interfaz que asegura la existencia del campo Id
+        /// Interfaz que asegura la existencia del campo Id, permite ordenar por el campo Id en forma descendente
         /// </summary>
-        [Obsolete("Usar IDescripcionId, si usará PageDynamic<T>, ya que los campos de DropDonwList requieren de un valor ID y DESCRIPCION")]
         public interface IId
         {
             int Id { get; set; }
