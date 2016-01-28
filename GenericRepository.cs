@@ -1357,12 +1357,21 @@ namespace GenericRepository
 
     public partial class Utils
     {
+        /// <summary>
+        /// Permite llenar controles tipo listados
+        /// </summary>
+        /// <typeparam name="T">Entidad del modelo EDM</typeparam>
+        /// <param name="ctrl">Elemento de lista</param>
+        /// <param name="datos">Origen de datos a llenar la propiedad DataSource del elemento de lista</param>
+        /// <param name="todos">Indica si se agrega la opción "( -- Todos -- )" al listado, y su valor es "0"</param>
+        /// <param name="seleccionar">Indica si se agrega la opción "( -- Seleccionar -- )" al listado, y su valor es "-1"</param>
+        /// <param name="orderByDescripcion">Indica si la opción de ordenación es aplicada al campo Descripción</param>
         public static void Llenar<T>(ListControl ctrl, List<T> datos, bool todos = false, bool seleccionar = false, bool orderByDescripcion = false) where T : IDescripcionId, new()
         {
-            Type tipo= datos.GetType();
+            Type tipo = datos.GetType();
             List<T> t = datos;
             if (todos)
-                t.Add(new T() { Id = -1, Descripcion = "( -- Todos -- )" });
+                t.Add(new T() { Id = 0, Descripcion = "( -- Todos -- )" });
             if (seleccionar)
                 t.Add(new T() { Id = -1, Descripcion = "( -- Seleccione un item de " + tipo.GenericTypeArguments[0].Name + " -- )" });
             ctrl.DataTextField = "Descripcion";
