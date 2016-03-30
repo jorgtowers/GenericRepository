@@ -31,6 +31,7 @@
  *               19-01-2016 12:00PM .- Se incluye propiedad para controlar el Orden Descendente del Listado, para esto se debe Extender el modelo 
  *                                     e implementar la interfaz GenericRepository.EF5.IId para cada Entidad y modificar la propiedad 
  *                                     PageDynamic<T>.Custom.Core.Listado.OrdenDescendente
+ *               30-03-2016 04:05PM .- Se incluye validación de lblEstatus cuando es null y no ha sido creada, por no tener acceso a la pagina
  *
  * CREADO......: 20-03-2015 11:53PM
  * ACTUALIZADO.: 19-01-2016 12:00PM
@@ -1121,7 +1122,10 @@ namespace GenericRepository
             if (!Page.IsPostBack)
             {
                 Mensaje = "";
-                lblEstatus.Text = Mensaje;
+                if (lblEstatus != null)
+                {
+                    lblEstatus.Text = Mensaje;
+                }
                 if (base.Id > 0)
                 {
                     FillCampos(model.Obtener<T>(base.Id));
