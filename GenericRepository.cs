@@ -32,6 +32,10 @@
  *                                     e implementar la interfaz GenericRepository.EF5.IId para cada Entidad y modificar la propiedad 
  *                                     PageDynamic<T>.Custom.Core.Listado.OrdenDescendente
  *               30-03-2016 04:05PM .- Se incluye validación de lblEstatus cuando es null y no ha sido creada, por no tener acceso a la pagina
+ *               02-04-2016 08:18PM .- Se cambia nombre de interfaz GenericRepository.EF5.IDescripcionId a GenericRepository.EF5.IRequiredFields, se le incluye la propiedad "Activo" para 
+ *                                     los filtros de los DropDownList filtren por los registros activos solamente. Se comenta bloque de RolPagina para dejar que la seguridad por defecto 
+ *                                     no sea cargada por BBDD, en caso de que se requiera se debe descomentar. Se actualiza GenericRepository.Utils.Llenar<> para que incluya el llamada a 
+ *                                     la interfaz IRequiredFilds
  *
  * CREADO......: 20-03-2015 11:53PM
  * ACTUALIZADO.: 19-01-2016 12:00PM
@@ -157,7 +161,7 @@ namespace GenericRepository
     /// </summary>
     /// <typeparam name="T">Instancia de Type a usar</typeparam>
     [Information(Descripcion = "Clase especializada para la generación de páginas web apartir del nombre de una instancia, usando reflextion")]
-    public abstract class PageDynamic<T> : AbstractPage where T :class,IId, new()
+    public abstract class PageDynamic<T> : AbstractPage where T : class, IId, new()
     {
         /// <summary>
         /// Enumerativo que determinar la presentación usarán los datos de tipo Boolean
@@ -167,8 +171,10 @@ namespace GenericRepository
         /// Enumerativo que determinar la presentación usarán los botones de acciones para el CRUD
         /// </summary>
         public enum eButtonsAs { Button, LinkButton }
-        internal class Custom {
-            internal class Core {
+        internal class Custom
+        {
+            internal class Core
+            {
                 internal class Listado
                 {
                     private static int _MaxRegistros = 1000;
@@ -223,7 +229,8 @@ namespace GenericRepository
                         set { _Titulo = value; }
                     }
                 }
-                internal class BooleanAs {
+                internal class BooleanAs
+                {
                     private static eBooleanAs _MostrarComo = eBooleanAs.Toogle;
                     /// <summary>
                     /// Permite controlar la presentación que usarán los datos de tipo Boolean, por defecto se usará eBooleanAs.CheckBox
@@ -267,7 +274,7 @@ namespace GenericRepository
                         get { return _MaxLength; }
                         set { _MaxLength = value; }
                     }
-                    
+
                     private static string _ValidationPattern = "";
                     /// <summary>
                     /// Indique nombre de campos separando por coma (,) y dos puntos (:) del valor de la clave del JS App.JS para el NS "App.Utils.Validation" por campo. Ej.: Descripcion:1,Observacion:0, donde "1" permite solo valores númericos y "0" una direccion url
@@ -278,8 +285,10 @@ namespace GenericRepository
                         set { _ValidationPattern = value; }
                     }
                 }
-                internal class ButtonAs {
-                    internal class Names {
+                internal class ButtonAs
+                {
+                    internal class Names
+                    {
                         private static string _Agregar = "Nuevo";
                         /// <summary>
                         /// Nombre que tendrá el boton de btnAgregar, su valor por defecto es "Nuevo"
@@ -327,118 +336,8 @@ namespace GenericRepository
                         set { _MostrarComo = value; }
                     }
                 }
-               
+
             }
-        }
-        [Obsolete("Usar PageDynamic<T>.Custom.Core.Listado.CantidadRegistros", true)]
-        private int _Cantidad = 1000;
-        /// <summary>
-        /// Cantidad de registros a retornar en el listado por defecto
-        /// </summary>
-        [Obsolete("Usar PageDynamic<T>.Custom.Core.Listado.CantidadRegistros", true)]
-        public int Cantidad
-        {
-            get { return _Cantidad; }
-            set { _Cantidad = value; }
-        }
-        [Obsolete("Usar PageDynamic<T>.Custom.UI.BooleanAs.MostrarComo", true)]
-        private eBooleanAs _BooleanAs = eBooleanAs.Toogle;
-        /// <summary>
-        /// Permite controlar la presentación que usarán los datos de tipo Boolean, por defecto se usará eBooleanAs.CheckBox
-        /// </summary>
-        [Obsolete("Usar PageDynamic<T>.Custom.UI.BooleanAs.MostrarComo", true)]
-        public eBooleanAs BooleanAs
-        {
-            get { return _BooleanAs; }
-            set { _BooleanAs = value; }
-        }
-        [Obsolete("Usar PageDynamic<T>.Custom.UI.ButtonAs.MostrarComo", true)]
-        private eButtonsAs _ButtonAs = eButtonsAs.LinkButton;
-        /// <summary>
-        /// Permite controlar la presentación que usarán los botones de acciones para el CRUD, por defecto se usará eButtonsAs.LinkButton
-        /// </summary>
-        [Obsolete("Usar PageDynamic<T>.Custom.UI.ButtonAs.MostrarComo", true)]
-        public eButtonsAs ButtonAs
-        {
-            get { return _ButtonAs; }
-            set { _ButtonAs = value; }
-        }
-        [Obsolete("Usar PageDynamic<T>.Custom.UI.TextBoxAs.Multilinea", true)]
-        private string _CamposTextoMultiLinea = "texto";
-        /// <summary>
-        /// Indique nombre de campos separando por coma (,) los que serán tipo "Multilinea", por defecto buscará campo llamado TEXTO. Ej.: Texto,Observacion,Descripcion
-        /// </summary>
-        [Obsolete("Usar PageDynamic<T>.Custom.UI.TextBoxAs.Multilinea", true)]
-        public string CamposTextoMultiLinea
-        {
-            get { return _CamposTextoMultiLinea; }
-            set { _CamposTextoMultiLinea = value; }
-        }
-        [Obsolete("Usar PageDynamic<T>.Custom.UI.ButtonAs.Names.Agregar", true)]
-        private string _NombreBotonAgregar = "Nuevo";
-        /// <summary>
-        /// Nombre que tendrá el boton de btnAgregar, su valor por defecto es "Nuevo"
-        /// </summary>
-        [Obsolete("Usar PageDynamic<T>.Custom.UI.ButtonAs.Names.Agregar", true)]
-        public string NombreBotonAgregar
-        {
-            get { return _NombreBotonAgregar; }
-            set { _NombreBotonAgregar = value; }
-        }
-        [Obsolete("Usar PageDynamic<T>.Custom.UI.ButtonAs.Names.Modificar", true)]
-        private string _NombreBotonModificar = "Guardar";
-        /// <summary>
-        /// Nombre que tendrá el boton de btnModificar, su valor por defecto es "Guardar"
-        /// </summary>
-        [Obsolete("Usar PageDynamic<T>.Custom.UI.ButtonAs.Names.Modificar", true)]
-        public string NombreBotonModificar
-        {
-            get { return _NombreBotonModificar; }
-            set { _NombreBotonModificar = value; }
-        }
-        [Obsolete("Usar PageDynamic<T>.Custom.UI.ButtonAs.Names.Eliminar", true)]
-        private string _NombreBotonEliminar = "Borrar";
-        /// <summary>
-        /// Nombre que tendrá el boton de btnEliminar, su valor por defecto es "Borrar"
-        /// </summary>
-        [Obsolete("Usar PageDynamic<T>.Custom.UI.ButtonAs.Names.Eliminar", true)]
-        public string NombreBotonEliminar
-        {
-            get { return _NombreBotonEliminar; }
-            set { _NombreBotonEliminar = value; }
-        }
-        [Obsolete("Usar PageDynamic<T>.Custom.UI.ButtonAs.Names.Limpiar", true)]
-        private string _NombreBotonLimpiar = "Cancelar";
-        /// <summary>
-        /// Nombre que tendrá el boton de btnLimpiar, su valor por defecto es "Cancelar"
-        /// </summary>
-        [Obsolete("Usar PageDynamic<T>.Custom.UI.ButtonAs.Names.Limpiar", true)]
-        public string NombreBotonLimpiar
-        {
-            get { return _NombreBotonLimpiar; }
-            set { _NombreBotonLimpiar = value; }
-        }
-        [Obsolete("Usar PageDynamic<T>.Custom.UI.TableHTML.Titulo", true)]
-        private string _TituloPagina = string.Empty;
-        /// <summary>
-        /// Nombre que tendrá el titulo de la página, su valor por defecto está en blanco "String.Empty"
-        /// </summary>
-        [Obsolete("Usar PageDynamic<T>.Custom.UI.TableHTML.Titulo", true)]
-        public string TituloPagina
-        {
-            get { return _TituloPagina; }
-            set { _TituloPagina = value; }
-        }
-        [Obsolete("Usar PageDynamic<T>.Custom.Core.Redondear", true)]
-        private short _Redondear = 2;
-        /// <summary>
-        /// Cantidad de decimales que serán usados para números decimales, su valor por defecto serán 2
-        /// </summary>
-        [Obsolete("Usar PageDynamic<T>.Custom.Core.Redondear", true)]
-        public short Redondear
-        {
-            get { return _Redondear; }
-            set { _Redondear = value; }
         }
 
         private Panel _Panel = null;
@@ -509,30 +408,41 @@ namespace GenericRepository
 
             /* ---------------------------------------------------
              * Acciones y permisos del rol
+             * Activar si el sitio implementa seguridad por BBDD
+             * ---------------------------------------------------
+             *
+             *  string urlActual = Request.Url.LocalPath;
+             *  RolPagina rolEnPagina = null;
+             *  try
+             *  {
+             *      rolEnPagina = UsuarioActual.Rol.RolPagina.Where(x => x.Pagina.Ruta.ToLower() == urlActual.ToLower()).FirstOrDefault();
+             *  }
+             *  catch { }
+             *  bool? tieneAcceso = null, puedeSeleccionar = null, puedeListar = null, puedeAgregar = null, puedeModificar = null, puedeEliminar = null;
+             *  if (rolEnPagina != null)
+             *  {
+             *      try
+             *      {
+             *          tieneAcceso = rolEnPagina.Acceso;
+             *          puedeSeleccionar = rolEnPagina.Seleccionar;
+             *          puedeListar = rolEnPagina.Listar;
+             *          puedeAgregar = rolEnPagina.Agregar;
+             *          puedeModificar = rolEnPagina.Modificar;
+             *          puedeEliminar = rolEnPagina.Eliminar;
+             *      }
+             *      catch { }
+             *  }
+             *  else
+             *      tieneAcceso = false;
+             *
              * --------------------------------------------------- */
-            string urlActual = Request.Url.LocalPath;
-            RolPagina rolEnPagina = null;
-            try
-            {
-                rolEnPagina = UsuarioActual.Rol.RolPagina.Where(x => x.Pagina.Ruta.ToLower() == urlActual.ToLower()).FirstOrDefault();
-            }
-            catch { }
-            bool? tieneAcceso = null, puedeSeleccionar = null, puedeListar = null, puedeAgregar = null, puedeModificar = null, puedeEliminar = null;
-            if (rolEnPagina != null)
-            {
-                try
-                {
-                    tieneAcceso = rolEnPagina.Acceso;
-                    puedeSeleccionar = rolEnPagina.Seleccionar;
-                    puedeListar = rolEnPagina.Listar;
-                    puedeAgregar = rolEnPagina.Agregar;
-                    puedeModificar = rolEnPagina.Modificar;
-                    puedeEliminar = rolEnPagina.Eliminar;
-                }
-                catch { }
-            }
-            else
-                tieneAcceso = false;
+
+            
+            
+            /* ---------------------------------------------------
+             * Desactivar si el sitio será controlado por BBDD
+             * --------------------------------------------------- */
+            bool? tieneAcceso = true, puedeSeleccionar = true, puedeListar = true, puedeAgregar = true, puedeModificar = true, puedeEliminar = true;
 
 
             /* ---------------------------------------------------
@@ -613,10 +523,20 @@ namespace GenericRepository
 
                         _Fields.Add(new KeyValuePair<string, string>("ddl" + nombre + "-" + propiedad.Name.Replace(nombre, ""), "Int32"));
                         _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'><b>" + Utils.SplitCamelCase(propiedad.Name) + "</b><p>" + (sumarioPropiedad != null ? sumarioPropiedad.Value.Trim() : "") + "</p></td><td>"));
-                        Type clase = Type.GetType(propiedad.PropertyType.Namespace + "." + nombre);
+                        string typeName = propiedad.PropertyType.Namespace + "." + nombre;
+                        Type clase = Type.GetType(typeName);
+                        
+                       IRequiredFields obj = (IRequiredFields)Activator.CreateInstance(clase);
 
-                        IDescripcionId obj = (IDescripcionId)Activator.CreateInstance(clase);
-                        //obj.Descripcion = "( -- Seleccionar -- )";
+
+                        //AssemblyName assemblyName = dll.GetName();
+                        //System.Reflection.Emit.AssemblyBuilder assemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(assemblyName, System.Reflection.Emit.AssemblyBuilderAccess.Run);                        
+                        //System.Reflection.Emit.ModuleBuilder moduleBuilder = assemblyBuilder.DefineDynamicModule(dll.Modules.FirstOrDefault().Name);
+                        //System.Reflection.Emit.TypeBuilder tb = moduleBuilder.DefineType(typeName, TypeAttributes.Public);
+                        //tb.SetParent(clase);
+                        //tb.AddInterfaceImplementation(typeof(IActivo));
+
+
                         obj.Descripcion = "( -- Seleccione un item de " + clase.Name + " -- )";
                         obj.Id = -1;
 
@@ -634,7 +554,7 @@ namespace GenericRepository
                             CssClass = "form-control"
                         };
 
-                        IList<IDescripcionId> listado = setClase != null ? setClase.Local.Cast<IDescripcionId>().ToList() : null;
+                        IList<IRequiredFields> listado = setClase != null ? setClase.Local.Cast<IRequiredFields>().Where(x=>x.Activo.Value).ToList() : null;
                         listado.Add(obj);
 
                         t.DataSource = listado.OrderBy(x => x.Descripcion);
@@ -692,23 +612,23 @@ namespace GenericRepository
                             }
                             else
                                 if (nombre.ToLower() == "userid" || !nombre.Contains("Id"))
+                            {
+                                //Establece un JQuery de DateTimePicker para los campos indicados en la propiedad Custom.UI.TextBoxAs.Fecha
+                                if (Custom.UI.TextBoxAs.Fecha.Length > 0 && Custom.UI.TextBoxAs.Fecha.Split(',').ToList().Contains(nombre))
                                 {
-                                    //Establece un JQuery de DateTimePicker para los campos indicados en la propiedad Custom.UI.TextBoxAs.Fecha
-                                    if (Custom.UI.TextBoxAs.Fecha.Length > 0 && Custom.UI.TextBoxAs.Fecha.Split(',').ToList().Contains(nombre))
-                                    {
-                                        _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'><b>" + Utils.SplitCamelCase(nombre) + "</b><p>" + labelDescripcion + "</p></td><td>"));
-                                        _Panel.Controls.Add(new LiteralControl("<div class='input-group date datepicker'>"));
-                                        _Panel.Controls.Add(t);
-                                        _Panel.Controls.Add(new LiteralControl("<span class='input-group-addon'><span class='fa fa-calendar-o'></span></span></div></td></tr>"));
-                                    }
-                                    else
-                                    {
-
-                                        _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'><b>" + Utils.SplitCamelCase(nombre) + "</b><p>" + labelDescripcion + "</p></td><td>"));
-                                        _Panel.Controls.Add(t);
-                                        _Panel.Controls.Add(new LiteralControl("</td></tr>"));
-                                    }
+                                    _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'><b>" + Utils.SplitCamelCase(nombre) + "</b><p>" + labelDescripcion + "</p></td><td>"));
+                                    _Panel.Controls.Add(new LiteralControl("<div class='input-group date datepicker'>"));
+                                    _Panel.Controls.Add(t);
+                                    _Panel.Controls.Add(new LiteralControl("<span class='input-group-addon'><span class='fa fa-calendar-o'></span></span></div></td></tr>"));
                                 }
+                                else
+                                {
+
+                                    _Panel.Controls.Add(new LiteralControl("<tr class='help'><td  class='info'><b>" + Utils.SplitCamelCase(nombre) + "</b><p>" + labelDescripcion + "</p></td><td>"));
+                                    _Panel.Controls.Add(t);
+                                    _Panel.Controls.Add(new LiteralControl("</td></tr>"));
+                                }
+                            }
                         }
                         if (tipo == "Boolean")
                         {
@@ -761,7 +681,7 @@ namespace GenericRepository
 
                     //sb.AppendLine("<br>");
                     //Response.Write(sb.ToString());
-                #endregion
+                    #endregion
                 }
                 _Panel.Controls.Add(new LiteralControl("<tr><td colspan='2'>"));
                 Label lblEstatus = new Label() { ID = "lblEstatus" };
@@ -860,20 +780,21 @@ namespace GenericRepository
                     foreach (KeyValuePair<string, string> headers in _Fields)
                     {
 
-                    
-                            string key = headers.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "").Replace("rbt", "");
-                            if (Custom.UI.TableHTML.Campos == "*" || Custom.UI.TableHTML.Campos.Split(',').ToList().Contains(key)) {                                
-                                if (key == "Id")
-                                    _Panel.Controls.Add(new LiteralControl("<td  class='unsortable'>" + key + "</td>"));
-                                if (key.ToLower() == "userid" || !key.Contains("Id"))
-                                {
-                                    if (key.Substring(key.IndexOf("-") + 1).Length > 0)
-                                        _Panel.Controls.Add(new LiteralControl("<td  " + ( key=="Avanza" || key == "Seleccionar" || key == "Listar" || key == "Modificar" || key == "Eliminar" || key == "Agregar" || key == "Acceso" || key == "Visible"  ? "class='unsortable'" : "") + "    >" + Utils.SplitCamelCase(key.Replace("-", "")) + "</td>"));
-                                    else
-                                        _Panel.Controls.Add(new LiteralControl("<td>" + Utils.SplitCamelCase(key.Substring(0, key.IndexOf("-"))) + "</td>"));
-                                }
+
+                        string key = headers.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "").Replace("rbt", "");
+                        if (Custom.UI.TableHTML.Campos == "*" || Custom.UI.TableHTML.Campos.Split(',').ToList().Contains(key))
+                        {
+                            if (key == "Id")
+                                _Panel.Controls.Add(new LiteralControl("<td  class='unsortable'>" + key + "</td>"));
+                            if (key.ToLower() == "userid" || !key.Contains("Id"))
+                            {
+                                if (key.Substring(key.IndexOf("-") + 1).Length > 0)
+                                    _Panel.Controls.Add(new LiteralControl("<td  " + (key == "Avanza" || key == "Seleccionar" || key == "Listar" || key == "Modificar" || key == "Eliminar" || key == "Agregar" || key == "Acceso" || key == "Visible" ? "class='unsortable'" : "") + "    >" + Utils.SplitCamelCase(key.Replace("-", "")) + "</td>"));
+                                else
+                                    _Panel.Controls.Add(new LiteralControl("<td>" + Utils.SplitCamelCase(key.Substring(0, key.IndexOf("-"))) + "</td>"));
                             }
-                    
+                        }
+
                     }
                     #endregion
                     _Panel.Controls.Add(new LiteralControl("</tr></thead>"));
@@ -1133,18 +1054,21 @@ namespace GenericRepository
                 RefreshListado();
             }
         }
-        protected string Mensaje {
-            get {
+        protected string Mensaje
+        {
+            get
+            {
                 if (Session["mensaje"] != null)
                     return Session["mensaje"] as string;
                 else
                     return string.Empty;
             }
-            set {
+            set
+            {
                 Session["mensaje"] = value;
             }
         }
-        
+
         private void RefreshListado()
         {
             if (Custom.Core.Listado.OrdenDescendente)
@@ -1357,7 +1281,7 @@ namespace GenericRepository
                 urlCompleta = urlCompleta - 5;
             Response.Redirect(Request.Url.AbsoluteUri.Substring(0, urlCompleta));
         }
-    }
+    }   
 
     public partial class Utils
     {
@@ -1370,7 +1294,7 @@ namespace GenericRepository
         /// <param name="todos">Indica si se agrega la opción "( -- Todos -- )" al listado, y su valor es "0"</param>
         /// <param name="seleccionar">Indica si se agrega la opción "( -- Seleccionar -- )" al listado, y su valor es "-1"</param>
         /// <param name="orderByDescripcion">Indica si la opción de ordenación es aplicada al campo Descripción</param>
-        public static void Llenar<T>(ListControl ctrl, List<T> datos, bool todos = false, bool seleccionar = false, bool orderByDescripcion = false) where T : IDescripcionId, new()
+        public static void Llenar<T>(ListControl ctrl, List<T> datos, bool todos = false, bool seleccionar = false, bool orderByDescripcion = false) where T : IRequiredFields, new()
         {
             Type tipo = datos.GetType();
             List<T> t = datos;
@@ -1387,7 +1311,7 @@ namespace GenericRepository
 
             ctrl.DataBind();
         }
-        public static string Duracion(DateTime desde,DateTime hasta)
+        public static string Duracion(DateTime desde, DateTime hasta)
         {
             TimeSpan span = hasta - desde;
             if (span.Days > 365)
@@ -1395,36 +1319,38 @@ namespace GenericRepository
                 int years = (span.Days / 365);
                 if (span.Days % 365 != 0)
                     years += 1;
-                return String.Format("{0} {1}",years, years == 1 ? "año" : "años");
+                return String.Format("{0} {1}", years, years == 1 ? "año" : "años");
             }
             if (span.Days > 30)
             {
                 int months = (span.Days / 30);
                 if (span.Days % 31 != 0)
                     months += 1;
-                return String.Format("{0} {1}",months, months == 1 ? "mes" : "meses");
+                return String.Format("{0} {1}", months, months == 1 ? "mes" : "meses");
             }
             if (span.Days > 0)
                 return String.Format("{0} {1}", span.Days, span.Days == 1 ? "día" : "días");
             if (span.Hours > 0)
-                return String.Format("{0} {1}",span.Hours, span.Hours == 1 ? "hora" : "horas");
+                return String.Format("{0} {1}", span.Hours, span.Hours == 1 ? "hora" : "horas");
             if (span.Minutes > 0)
-                return String.Format("{0} {1}",span.Minutes, span.Minutes == 1 ? "minuto" : "minutos");
+                return String.Format("{0} {1}", span.Minutes, span.Minutes == 1 ? "minuto" : "minutos");
             if (span.Seconds > 5)
                 return String.Format("{0} segundos", span.Seconds);
             if (span.Seconds <= 5)
                 return "ahora";
             return string.Empty;
         }
-        public static string Duracion(DateTime desde, DateTime hasta, bool hhmmss) {            
+        public static string Duracion(DateTime desde, DateTime hasta, bool hhmmss)
+        {
             var diff = hasta.Subtract(desde);
-            return String.Format("{0}:{1}:{2}", diff.Hours.ToString().PadLeft(2,'0'), diff.Minutes.ToString().PadLeft(2, '0'), diff.Seconds.ToString().PadLeft(2, '0'));
+            return String.Format("{0}:{1}:{2}", diff.Hours.ToString().PadLeft(2, '0'), diff.Minutes.ToString().PadLeft(2, '0'), diff.Seconds.ToString().PadLeft(2, '0'));
         }
         public static string SplitCamelCase(string input)
         {
             return System.Text.RegularExpressions.Regex.Replace(input, "([A-Z])", " $1", System.Text.RegularExpressions.RegexOptions.Compiled).Trim();
         }
-        public static string CamelCase(string input) {
+        public static string CamelCase(string input)
+        {
             return input.Substring(0, 1).ToUpper() + input.Substring(1, input.Length - 1).ToLower();
         }
     }
@@ -1859,7 +1785,7 @@ namespace GenericRepository
         }
     }
     namespace EF5
-    {   
+    {
         /// <summary>
         /// Interfaz que asegura la existencia del campo Id, permite ordenar por el campo Id en forma descendente
         /// </summary>
@@ -1868,13 +1794,15 @@ namespace GenericRepository
             int Id { get; set; }
         }
         /// <summary>
-        /// Interfaz que asegura la existencia del campo Id y Descripcion
-        /// </summary
-        public interface IDescripcionId
+        /// Interfaz que asegura la existencia del campo Id, Descripcion y Activo
+        /// </summary>
+        public interface IRequiredFields
         {
+            bool? Activo { get; set; }
             string Descripcion { get; set; }
             int Id { get; set; }
         }
+        
         public class Information : System.Attribute
         {
             public string Version;
@@ -1937,14 +1865,14 @@ namespace GenericRepository
             /// <typeparam name="T">Type de la clase solicitada</typeparam>
             /// <param name="id">Id del objeto a consultar</param>
             /// <returns>Returna instancia del objeto del tipo T</returns>
-            [Obsolete("Se recomienda usar T Obtener<T>(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes) where T : class",false)]
+            [Obsolete("Se recomienda usar T Obtener<T>(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes) where T : class", false)]
             public virtual T Obtener<T>(int id) where T : class
             {
                 //return Listado<T>().Where(x => x.Id == id).FirstOrDefault();
                 //Error: Varias instancias de IEntityChangeTracker no pueden hacer referencia a un objeto entidad.
                 //Solución: agregar ".AsNoTracking()"
                 //return Listado<T>().Where(x => x.Id == id).AsNoTracking().FirstOrDefault();
-                return _context.Set<T>().Find(id);               
+                return _context.Set<T>().Find(id);
             }
             /// <summary>
             /// Retorna objeto solicitado filtrando el valpor el predicado de Linq
@@ -1953,14 +1881,16 @@ namespace GenericRepository
             /// <param name="predicate">Expression(Func(T, bool)) LinQ que permite efectuar un filtro por ejemplo: predicado sería (x=>x.Id==1 && x.Fecha.Value==DateTime.Now.Year)</param>
             /// <param name="includes">IEnumerable(string) con listado de las propieades de Navegación y/o tablas dependientes del objeto que se esté recuperando</param>
             /// <returns>Returna instancia del objeto del tipo T</returns>
-            [Obsolete("Se recomienda usar T Obtener<T>(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes) where T : class",false)  ]
-            public T Obtener<T>(Expression<Func<T, bool>> predicate , IEnumerable<string> includePaths ) where T : class
+            [Obsolete("Se recomienda usar T Obtener<T>(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes) where T : class", false)]
+            public T Obtener<T>(Expression<Func<T, bool>> predicate, IEnumerable<string> includePaths) where T : class
             {
                 IQueryable<T> query = _context.Set<T>().AsNoTracking();
-                if (predicate != null) {
+                if (predicate != null)
+                {
                     query = query.Where(predicate);
                 }
-                if (includePaths != null){
+                if (includePaths != null)
+                {
                     query = includePaths.Aggregate(query, (current, includePath) => current.Include<T>(includePath));
                 }
                 return query.FirstOrDefault();
@@ -2004,7 +1934,8 @@ namespace GenericRepository
             public IQueryable<T> Listado<T>(params Expression<Func<T, object>>[] includes) where T : class
             {
                 IQueryable<T> set = _context.Set<T>().AsNoTracking();
-                foreach (var include in includes){
+                foreach (var include in includes)
+                {
                     set = set.Include(include);
                 }
                 return set.AsQueryable<T>();
@@ -2065,7 +1996,7 @@ namespace GenericRepository
                 var a = CheckIsAttached<T>(entity);
                 a.State = EntityState.Modified;
                 Save();
-            }           
+            }
             /// <summary>
             /// Permite modificar varios elemento en lote al Contexto
             /// </summary>
