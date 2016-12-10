@@ -36,6 +36,8 @@
  *                                     los filtros de los DropDownList filtren por los registros activos solamente. Se comenta bloque de RolPagina para dejar que la seguridad por defecto 
  *                                     no sea cargada por BBDD, en caso de que se requiera se debe descomentar. Se actualiza GenericRepository.Utils.Llenar<> para que incluya el llamada a 
  *                                     la interfaz IRequiredFilds
+ *               03-12-2016 15:34PM .- Se integra framework Material Designs ACE http://ace.jeka.by/ para mejorar apariencia del proyecto y de las Paginas Dinamicas
+ *               07-12-2016 05:16PM .- Sólo filtrara campos Read/Write, ya que los campos Extendidos de solo lectura generaban error por no tener Set;
  *
  * CREADO......: 20-03-2015 11:53PM
  * ACTUALIZADO.: 19-01-2016 12:00PM
@@ -491,9 +493,14 @@ namespace GenericRepository
 
             if (!tieneAcceso.HasValue || tieneAcceso.Value)
             {
+                /* ---------------------------------------------------------------------------------------------------------------
+                 * Solo filtrara campos Read/Write, ya que los campos Extendidos de solo lectura generaban error por no tener Set;
+                 * ---------------------------------------------------------------------------------------------------------------*/
+                PropertyInfo[] propiedades = TDynamic.GetProperties().Where(x => x.SetMethod != null).ToArray();
 
-                PropertyInfo[] propiedades = TDynamic.GetProperties();
-
+                #region Inicio Integracion con Framwork ACE
+                _Panel.Controls.Add(new LiteralControl("<div class='breadcrumbs ace-save-state' id='breadcrumbs'><ul class='breadcrumb'><li><i class='ace-icon fa fa-home home-icon'></i><a href='/pages/'>Home</a></li><li class='active'>"+ title + "</li></ul><!-- /.breadcrumb --></div><div class='page-content'><div class='page-header'><h1>"+title+"<small><i class='ace-icon fa fa-angle-double-right'></i>Información</small></h1></div><!-- /.page-header --><div class='row'><div class='col-xs-12'><!-- PAGE CONTENT BEGINS -->"));
+                #endregion
                 #region Region del Mantenimiento para hacer CRUD de los registros
                 _Panel.Controls.Add(new LiteralControl("<p id='btnToogleEditPanel'><b class='fa fa-edit'></b>Presione clic o la tecla F9, para abrir panel de edición.</p><div id='editPanel' style='display: none'><span id='closeEditPanel' onclick=app.Utils.Toogle('editPanel')><b class='fa fa-times'></b></span>"));
                 _Panel.Controls.Add(new LiteralControl("<nav><h4>Gestión de datos</h4></nav>"));
@@ -779,10 +786,12 @@ namespace GenericRepository
                      * ----------------*/
                     foreach (KeyValuePair<string, string> headers in _Fields)
                     {
-
-
+                        /* --------------------------------------------------------------------------------------
+                         * Se agrega .Replace("-","") ya que los DDL le ponen "-" y lo hace difierente y 
+                         * no lo muestra en la lista de campos pasados por parametros Custom.UI.TableHTML.Campos
+                         * -------------------------------------------------------------------------------------- */
                         string key = headers.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "").Replace("rbt", "");
-                        if (Custom.UI.TableHTML.Campos == "*" || Custom.UI.TableHTML.Campos.Split(',').ToList().Contains(key))
+                        if (Custom.UI.TableHTML.Campos == "*" || Custom.UI.TableHTML.Campos.Split(',').ToList().Contains(key.Replace("-", "")))
                         {
                             if (key == "Id")
                                 _Panel.Controls.Add(new LiteralControl("<td  class='unsortable'>" + key + "</td>"));
@@ -812,8 +821,12 @@ namespace GenericRepository
                         _Panel.Controls.Add(new LiteralControl("<tr>"));
                         foreach (KeyValuePair<string, string> campo in _Fields)
                         {
+                            /* --------------------------------------------------------------------------------------
+                             * Se agrega .Replace("-","") ya que los DDL le ponen "-" y lo hace difierente y 
+                             * no lo muestra en la lista de campos pasados por parametros Custom.UI.TableHTML.Campos
+                             * -------------------------------------------------------------------------------------- */
                             string key = campo.Key.Replace("txt", "").Replace("ddl", "").Replace("chk", "").Replace("rbt", "");
-                            if (Custom.UI.TableHTML.Campos == "*" || Custom.UI.TableHTML.Campos.Split(',').ToList().Contains(key))
+                            if (Custom.UI.TableHTML.Campos == "*" || Custom.UI.TableHTML.Campos.Split(',').ToList().Contains(key.Replace("-", "")))
                             {
                                 #region Campos de Tabla HTML
 
@@ -911,6 +924,9 @@ namespace GenericRepository
                     #endregion
                     _Panel.Controls.Add(new LiteralControl("</tbody></table></section>"));
                 }
+                #endregion
+                #region Fin Integracion con Framwork ACE
+                _Panel.Controls.Add(new LiteralControl("<!-- PAGE CONTENT ENDS --></div><!-- /.col --></div><!-- /.row --></div><!-- /.page-content -->"));
                 #endregion
             }
             else
