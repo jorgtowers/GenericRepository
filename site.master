@@ -1,0 +1,119 @@
+<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="site.master.cs" Inherits="Tickets.Pages.site" %>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" ng-app="Tickets">
+<head runat="server">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="author" content="Jorge L. Torres A.">
+    <meta name="copyright" content="(c) 2010 www.solution-developer.net Todos los derechos reservados">
+    <meta name="keywords" content="Soporte Técnico, Soporte, Tickets, Gestión, Servicios, Service Desk">
+    <meta name="description" content="Gestión de tickets, atención de soporte técnico">
+    <meta name="robots" content="all">
+    <title>Service Desk
+    </title>
+    <link href="/Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="/Scripts/bootstrap-datetimepicker.css" rel="stylesheet" />
+    <link href="/Content/font-awesome.min.css" rel="stylesheet" />
+    <link href="/Content/StyleSheet.css?version=27012016.0223" rel="stylesheet" />
+    <%--<script src="/Scripts/angular.min.js"></script>
+    <script src="/Scripts/ui-bootstrap-tpls-0.3.0.min.js"></script>
+    <script>var appAngularJS = angular.module('Tickets', ['ui.bootstrap']);</script>--%>
+    <script src="/Scripts/jquery-1.9.1.min.js"></script>
+   
+
+    <script src="/Scripts/filterTable.js"></script>
+    <script src="/Scripts/sortTable.js"></script>
+    <script src="/Scripts/jquery.dataTables.js"></script>
+    <script src="/Scripts/linq.min.js"></script>
+    <script src="/Scripts/App.js?version=27012016.0223"></script>
+    
+    
+    <asp:ContentPlaceHolder ID="CPH_HEAD" runat="server">
+    </asp:ContentPlaceHolder>
+     <script src="/Scripts/bootstrap.min.js"></script>
+    <script src="/Scripts/moment-with-locales.js"></script>
+    <script src="/Scripts/bootstrap-datetimepicker.js"></script>
+</head>
+<body>
+    <form id="form1" runat="server">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-xs-4 col-sm-3 col-md-2  site-lateral noPrint" ng-controller="listadoMenu">
+                    <p class="site-logoAplicacion">                    
+                        Service Desk
+                    </p>                    
+                    <% 
+                        string agrupacion = "";
+                        if (UsuarioActual != null)
+                       {                           
+                            %>
+                    <ul id="site-menu">
+                       
+                         <li >
+                             
+                            <a href="/pages/" title="Home">
+                                <b class="fa fa-home"></b>&nbsp; Home
+                            </a>
+                        </li>    
+                        <% foreach (Tickets.Model.RolPagina item in UsuarioActual.Rol.RolPagina.OrderBy(x=>x.Pagina.Agrupacion).ThenBy(x=>x.Pagina.Descripcion))
+                           {
+                               if (agrupacion != item.Pagina.Agrupacion)
+                               { %>
+                            <li><%:item.Pagina.Agrupacion %></li>
+                            <%} %>
+                        <li >
+                            <a href="<%:item.Pagina.Ruta %>" title="<%:item.Pagina.Descripcion %>">
+                                <b class="<%:item.Pagina.FontAwesome %>"></b>&nbsp;<%:item.Pagina.Descripcion %>
+                            </a>
+                        </li>       
+                           <%
+                               agrupacion = item.Pagina.Agrupacion;
+                           } %>                        
+                    </ul>
+                    <%} %>
+                    <div class="site-logoFooter col-xs-2 col-sm-2 col-md-2">
+                        <img src="../Images/LogoNotitarde.png" />
+                        <p>
+                            <b>Desarrollado por:</b> <br />Digitalización del Periódico
+                        </p>
+                    </div>                    
+                </div>
+                <div class="col-xs-8 col-sm-9 col-md-10  site-body Print">
+                    <header id="site-header" class="noPrint col-xs-offset-4 col-sm-offset-3 col-md-offset-2 ">
+                        <div class="login-State">
+                            <% if (UsuarioActual != null)
+                               {  %>
+                            <p>
+                                Bienvenido <strong><%=UsuarioActual.Descripcion %></strong>, 
+                                como <strong><%=UsuarioActual.Rol!=null?UsuarioActual.Rol.Descripcion:"" %></strong>, Fecha: <%= DateTime.Now.ToShortDateString() %>
+                                <br />
+                                <a href="/pages/login.aspx" style="  position: fixed;  top: 1em;  right: 1em;  color: white;"><b class="fa fa-sign-out"></b>Salir</a>
+                            </p>
+                            <%}
+                               else
+                               {%>
+                            <p>Inicie sesión para acceder al sistema</p>
+                            <%} %>
+                        </div>
+                    </header>
+                </div>
+                <div class="col-xs-8 col-sm-9 col-md-10  col-xs-offset-4 col-sm-offset-3 col-md-offset-2  site-body" >
+                    <section id="site-body" style="background-color: rgba(255, 255, 255, 0.85);padding: 1em 2em 2em">
+                        <asp:ContentPlaceHolder ID="CPH_BODY" runat="server">
+                        </asp:ContentPlaceHolder>
+                    </section>
+                </div>
+                <div class="col-xs-8 col-sm-9 col-md-10  site-body" >
+                    <footer id="site-footer"></footer>
+                </div>
+            </div>
+        </div>        
+    </form>
+    <asp:ContentPlaceHolder ID="CPH_FOOTER" runat="server">
+    </asp:ContentPlaceHolder>
+</body>
+</html>
